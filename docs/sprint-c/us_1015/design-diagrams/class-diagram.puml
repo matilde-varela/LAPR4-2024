@@ -1,0 +1,100 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+title US1015 - Class Diagram
+
+
+
+abstract class AbstractUI {
+    # doShow()
+    # show()
+    # mainLoop()
+}
+
+class VerifyRequirementUI {
++ doShow()
+}
+
+class VerifyRequirementsController  {
++ getJobOpeningList() : jobOpeningListDto
++ verifyAvailableRequirements(jobOpeningDto)
+- verifyRequirementsOfApplications(jobReference)
+}
+
+'Requirements
+interface FileManagement {
++ importData(file)
+}
+
+interface RequirementSpecificationPlugin {
++ evaluateRequirementSpecificationFile(file) : Integer
+}
+
+interface ApplicationRepository {
++ applicationsForJobOpeningWithRequirements(jobReference) : Iterable<Application>
+}
+
+class Application {
++ updateRequirementResult(result)
+}
+
+class AuthorizationService {
++ ensureAuthenticatedUserHasAnyOf(roles)
+}
+
+class RequirementSpecificationAnswer <<(V,#FF8B40) value object>> {
+- file : String
+}
+
+class RequirementSpecificationResult <<(V,#FF8B40) value object>> {
+- result : Boolean
+}
+
+interface DomainRepository {
++ ofIdentity()
++ save()
+}
+
+class JobOpeningRepository {
++ jobOpeningsInScreeningListOfCustomerManager(customerManagerUsername) : Iterable<JobOpening>
+}
+
+class JobOpeningManagementService{
++ jobOpeningsInScreeningListOfCustomerManager(customerManagerUsername) : List<JobOpeningDto>
+}
+class JobOpeningDTOService{
++ convertToDTO(jobOpeningList) : List<JobOpeningDto>
+}
+class JobOpening {
++ toDto()
+}
+
+
+
+AbstractUI <|-- VerifyRequirementUI
+
+VerifyRequirementUI .--> VerifyRequirementsController
+
+VerifyRequirementsController --> AuthorizationService
+VerifyRequirementsController --> JobOpeningRepository
+VerifyRequirementsController --> ApplicationRepository
+VerifyRequirementsController .--> RequirementSpecificationPlugin
+VerifyRequirementsController .--> FileManagement
+VerifyRequirementsController --> JobOpeningManagementService
+
+JobOpeningManagementService --> JobOpeningRepository
+JobOpeningManagementService --> JobOpeningDTOService
+JobOpeningManagementService .-> JobOpening
+JobOpeningDTOService .--> JobOpening
+
+
+
+ApplicationRepository .--> Application
+Application --> "1" RequirementSpecificationResult
+Application --> "1" RequirementSpecificationAnswer
+
+
+ApplicationRepository .--> DomainRepository
+JobOpeningRepository .--> DomainRepository
+
+@enduml

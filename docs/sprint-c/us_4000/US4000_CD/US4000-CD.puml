@@ -1,0 +1,139 @@
+@startuml US4000_class_diagram
+'https://plantuml.com/class-diagram
+
+title US4000 Class Diagram
+
+interface AbstractListUI{
+# elements()
+# elementPrinter()
+# emptyMessage()
+# listHeader()
+# elementName(
+# doShow()
+}
+
+class CustomerManagementService <<Service>> {
++ getAssignedCostumerCodesList(EmailAddress username)
+}
+
+class Customer <<Domain>> <<Aggregate Root>> {
+- CustomerCode customerCode
+- CompanyName companyName
+- EmailAddress costumerManagerEmail
++ customerCode()
++ companyName()
+}
+
+class JobOpeningManagementService <<Service>> {
++ getJobOpeningsFromCostumerCodes(List<CustomerCode> assignedCostumerCodesList)
++ filterJobOpeningList(List<Criteria> criteriaList)
+}
+
+class JobOpeningListDTOService <<Service>> {
++ convertToDTO(List<JobOpening> jobOpeningList)
+}
+
+class AnalyzeApplicationFilesUI <<Presentation>> {
++ elements()
++ elementPrinter()
++ emptyMessage()
++ listHeader()
++ elementName(
++ doShow()
+}
+
+class AnalyzeApplicationFilesController <<Application>> {
++ getAllJobOpenings()
++ getJobOpeningList()
+}
+
+class AuthorizationService <<Service>> {
++ loggedinUserWithPermissions(Role ... Action BaseRole.CUSTOMER_MANAGER)
+}
+
+class JobOpening <<Domain>> <<Aggregate Root>> {
+- JobFunction function
+- ContractType contractType
+- WorkMode workMode
+- Address jobOpeningAddress
+- JobReference jobReference
+- NumberVacancy numVacancies
+- JobDescription description
+- RequirementSpecification requirementsSpecification
+- Set<Application> applications
+- Rank rank
+--
++ getApplications()
+}
+
+class Application <<Domain>> <<Aggregate Root>> {
+- RequirementAnswer requirementAnswer;
+- RequirementResult requirementResult;
+- Set<ApplicationFile> files;
+- Date applicationDate;
+- ApplicationStatus applicationStatus;
+- Candidate candidate;
+- Interview interview;
+--
++ getFiles()
+}
+
+class ThreadService <<Service>> {
++ getTop20WordsInApplicationFiles(applicationFiles)
+}
+
+class FileWordCountThread <<Thread>> {
++ start()
+}
+
+class JobOpeningRepository <<Persistence>> <<Repository>> {
++ rebuild(JobOpening: entity)
++ getJobOpeningListMatchingCostumerCode(String costumerCode)
+}
+
+class CustomerRepository  <<Persistence>> <<Repository>>  {
++ save(e: Customer)
++ getCostumersByUsername(EmailAddress username)
+}
+
+interface RepositoryDatabase <<Persistence>> {
++ save(Customer: Customer)
+}
+
+
+'Associations
+'Basic Flow
+AnalyzeApplicationFilesUI ..> AnalyzeApplicationFilesController
+AnalyzeApplicationFilesController ..> CustomerManagementService
+AnalyzeApplicationFilesController ..> JobOpeningManagementService
+AnalyzeApplicationFilesController ..> JobOpeningListDTOService
+
+'Domain Layer
+CustomerManagementService -down-> CustomerRepository
+CustomerManagementService --> Customer
+JobOpeningManagementService --> JobOpeningRepository
+JobOpeningManagementService --> JobOpening
+JobOpeningListDTOService --> JobOpening
+
+JobOpening <-- Application
+AnalyzeApplicationFilesController ..> Application
+
+AnalyzeApplicationFilesController <.. ThreadService
+
+ThreadService ..> FileWordCountThread
+
+'Persistence Layer
+JobOpeningRepository --> JobOpening
+
+'Interface implementation
+RepositoryDatabase <|.. JobOpeningRepository : implements
+RepositoryDatabase <|.. CustomerRepository : implements
+
+AbstractListUI <|.. AnalyzeApplicationFilesUI : implements
+
+'Authentication
+AuthorizationService .right.> AnalyzeApplicationFilesController
+
+
+
+@enduml

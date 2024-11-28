@@ -1,0 +1,111 @@
+@startuml
+
+title US3002 Sequence Diagram
+
+participant "<<service>>\n:FollowUpConnectionService" as ConnSrv
+participant ":ClientConnectionThread" as CLITHREAD
+participant ":ListingRequestThread" as THREAD
+
+participant ":DataDTO" as DataDTO
+participant ":DataBlock" as DataBlock
+
+participant "<<service>>\n:JobOpeningManagementService" as JobSrv
+database "<<repository>>\n:JobOpeningRepository" as JobOpeningRepository
+participant "<<service>>\n:JobOpeningListDTOService" as DTO
+
+
+participant "<<service>>\n:CustomerManagementService" as CustSrv
+database "<<repository>>\n:CustomerRepository" as CustomerRepository
+
+autonumber
+
+ -> ConnSrv : getJobOpeningsDataList(username)
+activate ConnSrv
+
+ConnSrv -> CLITHREAD : receiveJobOpeningsDataList(username, code)
+note left
+code = 7 (JOBOPLIST)
+end note
+
+activate CLITHREAD
+
+CLITHREAD -> THREAD** : getJobOpeningsList(code, username)
+deactivate CLITHREAD
+activate THREAD
+
+THREAD -> JobSrv : getCustomerJobOpeningData(username)
+activate JobSrv
+
+JobSrv -> CustSrv : getCustomerByUsername(username)
+activate CustSrv
+
+CustSrv -> CustomerRepository : getCustomerByUsername(username)
+activate CustomerRepository
+deactivate CustomerRepository
+
+deactivate CustSrv
+
+JobSrv -> JobOpeningRepository : findAllJobOpeningsWithCustomerCode(customerCode.toString())
+activate JobOpeningRepository
+deactivate JobOpeningRepository
+
+
+JobSrv -> DTO : convertJobOpeningsToCustomerJobOpeningDTO(jobOpeningsList)
+activate DTO
+deactivate DTO
+
+JobSrv --> THREAD : jobOpeningsCustomerDataListDTO
+deactivate JobSrv
+
+THREAD -> DataDTO** : create(version, code)
+
+loop for all jobOpeningDTO
+THREAD -> DataDTO : addDataBlock(dataLength, jobOpeningDTO)
+activate DataDTO
+note right
+It's actually the byte
+array that originates
+from the serialization
+of a jobOpeningDTO
+end note
+
+DataDTO -> DataBlock** : create(dataLength, jobOpeningDTO)
+deactivate DataDTO
+
+end loop
+
+loop for all DTOs
+THREAD --> ConnSrv : sOut.writeObject(dataDTO)
+deactivate THREAD
+    note right
+    sOut an ObjectOutputStream from
+    the connection's sock OutputStream
+    end note
+
+end loop
+
+<-- ConnSrv : jobOpeningDTO
+deactivate ConnSrv
+
+
+opt "0 - Exit"
+
+ -> ConnSrv : closeConnection()
+activate ConnSrv
+
+ConnSrv -> CLITHREAD : closeConnection(code)
+deactivate ConnSrv
+activate CLITHREAD
+note left
+code = 1 (DISCONN)
+end note
+
+CLITHREAD --> CLITHREAD : clientSocket.close()
+
+autonumber stop
+CLITHREAD -[#white]> CLITHREAD
+deactivate CLITHREAD
+
+end opt
+
+@enduml

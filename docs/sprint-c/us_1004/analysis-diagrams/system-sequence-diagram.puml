@@ -1,0 +1,43 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+title US1004 - System Sequence Diagram
+
+autonumber
+
+actor "Customer Manager" as USER
+participant "System" as SYS
+
+activate USER
+
+USER -> SYS : asks to edit job opening
+activate SYS
+
+SYS --> USER : displays the job openings and asks to select one
+deactivate SYS
+
+
+USER -> SYS : selects job opening
+activate SYS
+
+SYS --> USER : shows all the information that can be edited and asks to select one
+deactivate SYS
+
+loop while user wants to edit
+
+USER -> SYS : selects information that wants to edit
+activate SYS
+
+SYS --> USER : asks for the new information
+deactivate SYS
+
+USER -> SYS: provides the new information
+activate SYS
+end loop
+
+SYS --> USER: displays success
+
+deactivate USER
+
+
+@enduml

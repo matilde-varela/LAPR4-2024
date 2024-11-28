@@ -1,0 +1,38 @@
+@startuml US1014_SSD
+autonumber
+title US1014 System Sequence Diagram
+
+actor "Customer Manager" as USER
+participant "System" as SYS
+
+activate USER
+
+USER -> SYS : asks to record the date and time for an interview
+
+activate SYS
+SYS --> USER : shows job opening list
+deactivate SYS
+USER -> SYS : choose the job opening
+
+activate SYS
+SYS --> USER : shows job applications list
+deactivate SYS
+USER -> SYS : choose the job application
+
+activate SYS
+SYS --> USER: asks to insert the date
+deactivate SYS
+
+USER -> SYS: insert the date
+activate SYS
+
+SYS --> USER: asks to insert the time
+deactivate SYS
+USER -> SYS: insert the time
+activate SYS
+SYS --> USER : success
+deactivate SYS
+
+deactivate USER
+
+@enduml

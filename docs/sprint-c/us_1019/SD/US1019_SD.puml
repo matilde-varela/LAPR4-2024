@@ -1,0 +1,125 @@
+@startuml US1019_SD
+
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+title US1019 Sequence Diagram
+
+autonumber
+
+actor "Customer Manager" as CM
+participant "<<presentation>>\n:ListOrderedCandidatesUI" as UI
+participant "<<application>>\n:ListOrderedCandidatesController" as CTRL
+participant ":AuthorizationService" as AUTHZ <<service>>
+participant "<<service>>\n:JobOpeningManagementService" as JobManagement
+participant "<<service>>\n:JobOpeningDTOService" as JOS_DTO
+participant "<<repository>>\n:JobOpeningRepository" as JobOpeningRepository
+participant "<<domain>>\n:JobOpening" as JobOpening
+participant "<<service>>\n:ApplicationManagementService" as AppManagement
+participant "<<repository>>\n:ApplicationRepositoryRepository" as ApplicationRepository
+participant "<<service>>\n:ApplicationDTOService" as AppDTOServ
+participant "<<domain>>\n:Application" as Application
+
+activate CM
+
+CM -> UI : asks to get an ordered list of the candidates
+activate UI
+
+UI -> CTRL** : create()
+
+UI -> CTRL: getJobOpeningList()
+activate CTRL
+
+CTRL -> AUTHZ : loggedinUserWithPermissions(BaseRole.CUSTOMER_MANAGER)
+    activate AUTHZ
+    deactivate AUTHZ
+
+    CTRL -> JobManagement: jobOpeningsOfCustomerManager(username)
+    activate JobManagement
+
+    JobManagement -> JobOpeningRepository : getJobOpeningListInAnalysisPhase(customerManagerUsername)
+    activate JobOpeningRepository
+    deactivate JobOpeningRepository
+
+JobManagement -> JobOpeningRepository : convertToDTO(jobOpeningList)
+activate JobOpeningRepository
+
+    loop for each JobOpening
+        JobOpeningRepository -> JobOpening : toDTO()
+        activate JobOpening
+        deactivate JobOpening
+    end loop
+deactivate JobOpeningRepository
+
+JobManagement --> CTRL : jobOpeningListDTO
+deactivate JobManagement
+
+    CTRL --> UI : jobOpeningListDTO
+
+    deactivate CTRL
+
+UI --> CM : displays the job openings and asks the user \nto select one job opening
+deactivate UI
+
+CM -> UI : selects the job opening
+activate UI
+
+UI -> CTRL: getApplicationsOrderedByInterviewResult(jobOpeningDTO)
+activate CTRL
+
+    CTRL -> JobManagement : getJobOpening(jobOpeningDTO)
+    activate JobManagement
+
+    JobManagement -> JobOpeningRepository : getJobOpening(jobOpeningDTO)
+    activate JobOpeningRepository
+
+    JobOpeningRepository --> JobManagement : jobOpening
+    deactivate JobOpeningRepository
+
+    JobManagement --> CTRL : jobOpening
+    deactivate JobManagement
+
+
+    CTRL -> AppManagement : getApplicationsWithInterviewGrade(jobOpening)
+    activate AppManagement
+
+    AppManagement -> ApplicationRepository : getApplicationsWithInterviewGrade()
+    activate ApplicationRepository
+    deactivate ApplicationRepository
+
+
+    AppManagement --> AppDTOServ :  convertToDTO(applicationList)
+    activate AppDTOServ
+
+    loop for each application
+    AppDTOServ -> Application : toDTO()
+    activate Application
+    deactivate Application
+    end loop
+
+    deactivate AppDTOServ
+
+    AppManagement --> CTRL : applicationsListDTO
+    deactivate AppManagement
+
+    CTRL -> AppManagement : getApplicationsOrderedByInterviewResult(applicationsListDTO)
+    activate AppManagement
+
+    AppManagement --> CTRL : orderApplicationDTOList
+    deactivate AppManagement
+
+
+    CTRL --> UI : orderApplicationDTOList
+    deactivate CTRL
+
+
+UI --> CM : shows the candidates list in descending order,\n accordingly to the job interview points
+deactivate UI
+
+deactivate CM
+
+
+
+@enduml
+

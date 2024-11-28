@@ -1,0 +1,45 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+skinparam sequenceMessageAlign center
+
+CustomerManager -> System: Asks to list the information of a candidate
+
+loop
+
+    System --> CustomerManager: Shows list of candidates and asks which one (using email)
+
+
+    alt Invalid email address
+
+        CustomerManager -> System: Inputs a invalid email address
+
+        System --> System: Searches for the candidate with that email
+
+        System --> CustomerManager: Notifies the user it's invalid and asks to try again
+
+    else Valid email address
+
+        CustomerManager -> System: Inputs a valid email address
+
+        System --> System: Searches for the candidate with that email
+
+        System --> CustomerManager: Shows the candidates personal details
+    end
+
+    System --> CustomerManager: Asks the user if it wants to search for another candidate
+
+    alt User wants to search again
+
+        CustomerManager -> System: Accepts
+
+    end
+
+end
+
+    CustomerManager -> System: Writes "Exit"
+
+    System --> CustomerManager: Sends user back to the main menu
+
+@enduml

@@ -1,0 +1,74 @@
+@startuml
+
+
+' Services
+
+abstract class AbstractUI {
+    # doShow()
+    # show()
+    # mainLoop()
+}
+abstract class AbstractListUI{
+    # elements()
+    # elementPrinter();
+}
+class ScheduleInterviewUI {
+
+}
+class AuthorizationService {
+    + ensureAuthenticatedUserHasAnyOf(roles)
+}
+
+class JobOpeningManagementService {
+    + getJobOpeningList()
+}
+class JobOpeningDTOService {
+    + convertToDto()
+}
+class ApplicationManagementService {
+    + getApplicationList()
+    + updateApplication()
+}
+class ApplicationDtoService {
+    + convertToDto()
+}
+
+class ScheduleInterviewController  {
++ getJobOpeningList()
++ getApplicationList()
++ updateApplication(date,time)
+}
+class JobOpeningRepository{
+    + getJobOpeningList()
+
+}
+
+class ApplicationRepository{
+    + getApplicationsList()
+    + save()
+}
+
+Interface DomainRepository{
+    + save()
+    + ofIdentify()
+}
+
+AbstractUI <|-- AbstractListUI
+AbstractUI <|- ScheduleInterviewUI
+
+
+ScheduleInterviewUI .--> ScheduleInterviewController
+ScheduleInterviewController .--> AuthorizationService
+ScheduleInterviewController .--> ApplicationManagementService
+ScheduleInterviewController .--> JobOpeningManagementService
+
+ApplicationManagementService .--> ApplicationDtoService
+ApplicationManagementService --> ApplicationRepository
+JobOpeningManagementService .--> JobOpeningDTOService
+JobOpeningManagementService --> JobOpeningRepository
+
+JobOpeningRepository ..> DomainRepository
+
+ApplicationRepository --> DomainRepository
+
+@enduml

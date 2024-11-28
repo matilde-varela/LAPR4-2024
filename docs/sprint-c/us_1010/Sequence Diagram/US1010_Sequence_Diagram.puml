@@ -1,0 +1,94 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+Actor "CustomerManager" as CM
+Participant "<<Presentation>>\nChangePhaseStatesUI" as UI
+Participant "<<Application>>\nChangePhaseStatesController" as CTRL
+Participant "<<Service>>\nRecruitmentProcessManagementService" as RPS
+Participant "<<Service>>\nRecruitmentProcessDTOService" as RPDTOS
+Database "<<Repository>>\nRecruitmentProcessRepository" as RPREPO
+Participant "<<Domain>>\nRecruitmentProcess" as RP
+
+CM -> UI : Asks to change the state of a Phase
+
+Activate CM
+
+Activate UI
+
+    UI -> CTRL** : create
+
+    UI -> CTRL : getAllJobOpenings()
+
+    Activate CTRL
+
+        ref over CTRL : sequence-diagram-get-job-openings \n (in docs/team-decisions/shared-sequence-diagram)
+
+        CTRL --> UI : jobOpeningDTOList
+
+        UI -> UI : doShow()
+
+    Deactivate CTRL
+
+    UI --> CM : Shows job openings and asks for one
+
+    CM -> UI : Job Reference
+
+    UI -> CTRL : getRecruitmentProcessDTOWithJobReference(jobReference)
+
+    Activate CTRL
+
+        CTRL -> RPS : getRecruitmentProcessDTOWithJobReference(jobReference)
+
+        Activate RPS
+
+            RPS -> RPREPO : getRecruitmentProcessDTOWithJobReference(jobReference)
+
+            Activate RPREPO
+
+            Deactivate RPREPO
+
+            RPS -> RPDTOS : convertToDTO(recruitmentProcess)
+
+            Activate RPDTOS
+
+                RPDTOS -> RP : toDTO()
+
+                Activate RP
+
+                Deactivate RP
+
+                RPDTOS --> RPS : recruitmentProcessDTO
+
+            Deactivate RPDTOS
+
+            RPS --> CTRL : recruitmentProcessDTO
+
+        Deactivate RPS
+
+        CTRL --> UI : recruitmentProcessDTO
+
+    Deactivate CTRL
+
+    UI -> UI : doShow()
+
+    UI --> CM : Shows all the Phases of the Recruitment Process and their states
+
+    UI --> CM : Asks if it wants to start a phase or go back
+
+    alt Go back
+
+        ref over CM, UI : Go_Back_Scenario
+
+    else Next Phase
+
+        ref over CM, UI : Start_Phase_Scenario
+
+    end
+
+Deactivate CM
+
+Deactivate UI
+
+@enduml

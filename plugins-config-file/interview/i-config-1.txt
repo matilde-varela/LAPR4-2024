@@ -1,0 +1,10 @@
+[SC]-1/Which one do you have more experience in?/Bitbucket;Github;SourceTree/Bitbucket:10/Github:7/SourceTree:5
+[MC]-1/Which of the following you are familiar with?/TypeScript;Python;C;Java/Java;Python:10/Java;Python;C:10
+[WN]-1/How many years have you been working as a Software Engineer?/5:10/>=
+[D]-1/When did you finish your university degree?/31-01-2024:10/<=
+[WN]-2/How many projects have you completed?/15:10/>=
+[TF]-1/Are you familiar with responsive web design?/True:10
+[NS]-1/Rate your proficiency in C on a scale of one to five.\/2-3:5/4-5:10
+[DN]-1/What is the pixel width of a standard Bootstrap container?/13.2:10/=
+[SA]-1/Name a popular CSS preprocessor./Prepors:10/LESS:5/Stylus:9/Tachyons:7
+[T]-1/At what time do you usually start coding?/10:00:10/<=

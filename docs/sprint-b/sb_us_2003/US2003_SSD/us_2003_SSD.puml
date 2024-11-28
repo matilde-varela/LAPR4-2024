@@ -1,0 +1,42 @@
+@startuml US2003_SSD
+autonumber
+
+title US2003 System Sequence Diagram
+
+actor "Operator" as OP
+participant "System" as SYS
+participant "Plugin" as PLU
+
+activate OP
+
+OP -> SYS : asks to generate a new requirements\n specification file
+
+activate SYS
+
+    SYS --> OP : shows job openings to select
+deactivate SYS
+
+OP -> SYS : selects a job Opening
+activate SYS
+
+SYS --> OP : shows requirement specification\n associated with the job opening
+
+SYS -> PLU : generate and export template file
+activate PLU
+
+PLU -> PLU : generates file
+
+PLU -> PLU : validates the generated template\n file with a specific grammar
+
+PLU -> PLU : exports the requirements\n specification file
+
+PLU --> SYS : confirms exportation
+deactivate PLU
+
+SYS --> OP : confirms the successful\n exportation of the file
+deactivate SYS
+
+
+deactivate OP
+
+@enduml

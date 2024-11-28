@@ -1,0 +1,68 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+skinparam classAttributeIconSize 0
+hide empty attributes
+skinparam classBackgroundColor beige
+skinparam ArrowColor #222222
+
+
+'SHARED VALUE OBJETS
+class Address <<(V,#FF8B40) value object>> {}
+
+package "<<aggregate>> Requirement Specification" {
+    entity RequirementSpecification <<entity>> <<root>>  {}
+    class RequirementName <<(V,#FF8B40) value object>> <<identifier>> {}
+}
+
+'AGGREGATES
+package "<<aggregate>> Job Opening" {
+    entity JobOpening <<entity>> <<root>> {}
+    class JobFunction <<(V,#FF8B40) value object>> {}
+    class ContractType <<(V,#FF8B40) value object>> {}
+    class Mode <<(V,#FF8B40) value object>> {}
+    class NumberVacancy <<(V,#FF8B40) value object>> {}
+       class Description <<(V,#FF8B40) value object>> {}
+     class JobReference <<(V,#FF8B40) value object>> <<identifier>> {}
+      class Rank <<(V,#FF8B40) value object>>{}
+}
+
+
+package "<<aggregate>> Customer Manager" {
+    entity CustomerManager <<entity>> <<root>>  {}
+}
+
+package "<<aggregate>> Entity" {
+    entity Entity <<entity>> <<root>>  {}
+    class CustomerCode <<(V,#FF8B40) value object>> <<identifier>> {}
+    class CompanyName <<(V,#FF8B40) value object>> {}
+}
+package "<<aggregate>> Customer" {
+    entity Customer <<entity>> <<root>> {}
+    }
+
+
+'ASSOCIATIONS
+Entity --> "1..*" JobOpening : sends
+Entity --> "1" CompanyName : is described by
+Entity -> "1" Address : is located at
+Entity --> "1" CustomerCode : is identified by
+'--
+CustomerManager --> "1..*" Entity: manages
+CustomerManager --> "1..*" JobOpening: registers
+CustomerManager --> "1..*" RequirementSpecification : selects
+'--
+Customer --> "1" Entity :  represents
+'--
+JobOpening ---> "1"  JobReference : includes
+JobOpening --> "1"  Mode : includes
+JobOpening --> "1"  NumberVacancy : includes
+JobOpening -> "1"  Address : includes
+JobOpening --> "1"  JobFunction : includes
+JobOpening ---> "1"  Description : includes
+JobOpening ---> "1"  ContractType : includes
+JobOpening --> "1"  RequirementSpecification : includes
+JobOpening ---> "*"  Rank : includes
+'__
+RequirementSpecification --> "1" RequirementName: identifies <
+@enduml

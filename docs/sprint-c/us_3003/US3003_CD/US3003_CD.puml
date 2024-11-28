@@ -1,0 +1,92 @@
+@startuml US3001_class_diagram
+'https://plantuml.com/class-diagram
+
+title US3001 Class Diagram
+
+interface AbstractListUI{
+# elements()
+# elementPrinter()
+# emptyMessage()
+# listHeader()
+# elementName(
+# doShow()
+}
+
+class FollowUpConnectionService <<Service>> {
++ getJobOpeningsFromCostumerCodes(List<CustomerCode> assignedCostumerCodesList)
++ filterJobOpeningList(List<Criteria> criteriaList)
++ establishConnection(username, password, serverIP, PORT_NUMBER)
++ socket(serverIP, PORT_NUMBER)
+}
+
+class NotificationManagementService <<Service>> {
++ getAllNotifProcess(username)
+}
+
+class FollowUpServer <<Server>> {
++ create(clientSocket)
+}
+
+class NotificationInboxUI <<Presentation>> {
++ elements()
++ elementPrinter()
++ emptyMessage()
++ listHeader()
++ elementName(
++ doShow()
+}
+
+class NotificationInboxController <<Application>> {
++ getSessionCredentials()
++ getconnection(username, password, PORT_NUMBER)
++ startNotificationRetrievalProcess(username)
++ getAllUnseenNotifications()
++ closeConnection()
+}
+
+class AuthorizationService <<Service>> {
++ loggedinUserWithPermissions(Role ... Action BaseRole.CUSTOMER_MANAGER)
+}
+
+class ClientConnectionThread <<Thread>> {
++ start()
++ createNotifThread(username)
++ authenticationProtocol(messageDTO)
++ sOut.writeByte(byte)
+}
+
+class NotificationThread <<Thread>> {
++ start()
+}
+
+class NotificationRepository <<Persistence>> <<Repository>> {
++ rebuild(Notification: entity)
++ getAllUnseenNotifications(EmailAddress username)
+}
+
+interface RepositoryDatabase <<Persistence>> {
++ save(Customer: Customer)
+}
+
+
+'Associations
+'Basic Flow
+NotificationInboxUI ..> NotificationInboxController
+NotificationInboxController ..> FollowUpConnectionService
+FollowUpConnectionService .right.> FollowUpServer
+FollowUpServer ..> ClientConnectionThread
+ClientConnectionThread .left.> NotificationThread
+NotificationThread .left.> NotificationManagementService
+NotificationManagementService .right.> NotificationRepository
+FollowUpConnectionService <.. ClientConnectionThread
+
+'Interface implementation
+RepositoryDatabase <|.. NotificationRepository : implements
+AbstractListUI <|.right. NotificationInboxUI : implements
+
+'Authentication
+AuthorizationService .right.> NotificationInboxController
+
+
+
+@enduml

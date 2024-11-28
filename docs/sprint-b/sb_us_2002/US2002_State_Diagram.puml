@@ -1,0 +1,22 @@
+@startuml US2002_Application_State_Diagram
+'https://plantuml.com/state-diagram
+
+title US2002 Application State Diagram
+
+scale 350 width
+
+state NOT_CHECKED {
+}
+
+state ACCEPTED {
+}
+
+state REJECTED {
+}
+
+
+[*] --> NOT_CHECKED : Application was not evaluated
+NOT_CHECKED ---> ACCEPTED : Application was evaluated\n and accepted
+NOT_CHECKED ---> REJECTED : Application was evaluated\n and rejected
+
+@enduml

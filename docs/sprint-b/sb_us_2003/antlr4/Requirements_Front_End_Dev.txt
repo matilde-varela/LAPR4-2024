@@ -1,0 +1,31 @@
+[MC]-1 "Which of the following are front end languages?"
+1) HTML
+2) Python
+3) CSS
+A:.
+
+[DN]-1 "What is the pixel width of a standard Bootstrap container?"
+A:.
+
+[SA]-1 "Name a popular CSS preprocessor."
+A:.
+
+[T]-1 "At what time do you usually start coding?"
+A:.
+
+[WN]-1 "How many years have you been working with JavaScript?"
+A:.
+
+[D]-1 "When did you start learning web development?"
+A:.
+
+[NS]-1 "Rate your proficiency in CSS on a scale of one to five."
+A:.
+
+[SC]-1 "Do you prefer using React or Angular for front end development?"
+1) React
+2) Angular
+A:.
+
+[TF]-1 "Are you familiar with responsive web design?"
+A:.

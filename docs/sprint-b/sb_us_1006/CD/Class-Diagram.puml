@@ -1,0 +1,81 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+skinparam groupInheritance 3
+
+Class "<<Domain>>\n<<Service>>\nListCandidateDataService" as SERVICE {
+    + listCandidateData(Email: email)
+}
+Class "<<Presentation>>\nListCandidateDataUI" as UI {
+    ..
+    + doShow()
+}
+Class "<<Application>>\nListCandidateDataController" as CTRL {
+    ..
+    + listCandidates()
+}
+Interface "<<Persistentence>>\nDomainRepository" as DREPO {
+    ..
+    - findAll()
+    - findAllById(Iterable<Email>: emails)
+    - findById(Email: email)
+    - save(Entity: Entity)
+}
+Interface "<<Presentation>>\nAbstractUI" as ABUI {
+    ..
+    - doShow()
+}
+Class "<<Persistence>>\n<<Repository>>\nCandidateRepository" as CREPO {
+    ..
+    + findAll()
+    + findAllById(Iterable<Email>: emails)
+    + findById(Email: email)
+    + save(Entity: Entity)
+}
+Class "<<Domain>>\n<<Root Entity>>\nCandidate" as C {
+    - CandidateName: name
+    - Email: email
+    - PhoneNumber: number
+    ..
+    + valueOfCandidateName()
+    + valueOfEmail()
+    + valueOfPhoneNumber()
+    + toString()
+}
+Class "<<Domain>>\n<<Value Object>>\nCandidateName" as CNAME {
+    - String: nameOfCandidate
+    ..
+    + valueOfCandidateName()
+    + toString()
+}
+Class "<<Domain>>\n<<Value Object>>\nEmail" as CEMAIL {
+    - String: emailOfCandidate
+    ..
+    + valueOfCandidateEmail()
+    + toString()
+}
+Class "<<Domain>>\n<<Value Object>>\nPhoneNumber" as CPHONE {
+    - Integer: phoneNumberOfCandidate
+    ..
+    + valueOfCandidatePhoneNumber()
+    + toString()
+}
+
+C o-- CPHONE
+C o-- CNAME
+C o-- CEMAIL
+
+CREPO ...|> DREPO: implements
+
+UI ...|> ABUI: implements
+UI ...> CTRL
+
+CTRL ..> CREPO
+CTRL ..> SERVICE
+
+SERVICE --> CREPO
+SERVICE --> C
+
+C ..> CREPO: stored in
+
+@enduml

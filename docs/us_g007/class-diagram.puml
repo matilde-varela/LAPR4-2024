@@ -1,0 +1,54 @@
+@startuml
+
+
+' Services
+class AuthenticationService <<service>> {
+    + authenticate()
+}
+
+class AuthorizationService <<service>> {
+}
+
+class PasswordEncoder <<service>> {
+}
+
+class PasswordPolicy <<service>> {
+}
+class Password <<value>> {
+}
+
+
+class UserSession {
+}
+
+
+' User aggregate
+class SystemUser <<root>> {
+}
+class UserName <<value>> <<id>> {
+}
+
+class Role <<value>> <<id>> {
+}
+
+AuthenticationService .--> AuthorizationService
+AuthenticationService .-> Role
+AuthenticationService .-> PasswordPolicy
+AuthenticationService .-> PasswordEncoder
+AuthenticationService .-> UserName
+
+AuthorizationService --> UserSession
+
+UserSession --> SystemUser
+
+SystemUser -> UserName
+SystemUser -> Password
+
+Password .-> PasswordPolicy
+Password .-> PasswordEncoder
+
+
+
+
+
+@enduml

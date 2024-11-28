@@ -1,0 +1,58 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+skinparam classAttributeIconSize 0
+hide empty attributes
+skinparam classBackgroundColor beige
+skinparam ArrowColor #222222
+
+title US1011 Domain Model
+
+'SHARED VALUE OBJETS
+ class Address <<(V,#FF8B40) value object>> {}
+
+ class PluginJarFile <<(V,#FF8B40) value object>> {}
+
+'SERVICES
+package "<<aggregate>> Interview Model" {
+    entity InterviewModel <<entity>> <<root>>  {}
+    class InterviewModelName <<(V,#FF8B40) value object>> <<identifier>> {}
+    class InterviewModelDescription <<(V,#FF8B40) value object>> {}
+
+}
+
+'AGGREGATES
+package "<<aggregate>> Job Opening" {
+    entity JobOpening <<entity>> <<root>> {}
+    class JobFunction <<(V,#FF8B40) value object>> {}
+    class ContractType <<(V,#FF8B40) value object>> {}
+    class Mode <<(V,#FF8B40) value object>> {}
+    class NumberVacancy <<(V,#FF8B40) value object>> {}
+    class Description <<(V,#FF8B40) value object>> {}
+    class Rank <<(V,#FF8B40) value object>>{}
+    class JobReference <<(V,#FF8B40) value object>> <<identifier>> {}
+
+}
+package "<<aggregate>> Customer Manager" {
+    entity CustomerManager <<entity>> <<root>>  {}
+}
+
+CustomerManager --> "1..*" InterviewModel : selects
+CustomerManager --> "1..*" JobOpening: registers
+
+InterviewModel --> "1" InterviewModelName: identifies <
+InterviewModel --> "1" InterviewModelDescription: describes <
+InterviewModel --> "1" PluginJarFile: configures <
+
+'--
+JobOpening --> "1"  Mode : includes
+JobOpening ---> "1"  JobReference : includes
+JobOpening --> "1"  NumberVacancy : includes
+JobOpening --> "1"  JobFunction : includes
+JobOpening ---> "1"  Description : includes
+JobOpening ---> "1"  ContractType : includes
+JobOpening -> "1"  InterviewModel : includes
+JobOpening ---> "1"  Address : includes
+
+JobOpening ---> "*"  Rank : includes
+@enduml

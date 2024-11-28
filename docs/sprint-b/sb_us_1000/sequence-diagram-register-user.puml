@@ -1,0 +1,116 @@
+@startuml
+autonumber
+
+
+actor "Admin" as AD
+
+participant ":AddUserUI" as RUUI <<presentation>>
+participant ":AddUserController" as AUC <<application>>
+participant ":GeneratePasswordService" as GPS <<service>>
+participant ":UserManagementService" as UMS <<service>>
+participant ":AuthorizationService" as AUTHZ <<service>>
+participant ":BaseRoles" as BR <<domain>>
+participant ":RandomPassword" as PG <<domain>>
+
+
+
+note right AUTHZ
+The UserManagementService and
+AuthorizationService are implemented
+in the eapli framework and will
+be used in this functionality.
+end note
+
+activate AD
+
+AD -> RUUI: wants to register new user
+activate RUUI
+
+RUUI -> AUC**: create
+
+RUUI -> AUC :getBackofficeRoleTypes()
+activate AUC
+
+AUC -> BR :getBackofficeRoleTypes()
+activate BR
+
+BR --> AUC: roles
+deactivate BR
+
+AUC --> RUUI: roles
+deactivate AUC
+
+RUUI --> AD: asks for necessary information and shows roles
+
+alt manual password
+AD -> RUUI: email, name, role, password
+RUUI -> AUC: addUser(email, name, role, password)
+activate AUC
+
+AUC -> AUC: addUser(email, name, role, password, createdOn)
+activate AUC
+
+AUC -> AUTHZ:  ensureAuthenticatedUserHasAnyOf(roles)
+activate AUTHZ
+
+deactivate AUTHZ
+
+AUC -> UMS: registerNewUser(email, password, firstName, lastName, email, roles, createdOn)
+activate UMS
+
+
+
+UMS --> AUC: user
+deactivate UMS
+
+AUC --> AUC: user
+deactivate AUC
+
+AUC --> RUUI: user
+deactivate AUC
+
+else automatic password
+AD -> RUUI: email, name, role
+RUUI -> AUC: addUser(email, name, role)
+activate AUC
+
+AUC -> GPS: generatePassword()
+activate GPS
+
+GPS -> PG**: create()
+activate PG
+
+PG --> GPS: password
+deactivate PG
+
+GPS --> AUC: password
+deactivate GPS
+
+
+AUC -> AUC: addUser(email, name, role, password, createdOn)
+activate AUC
+
+AUC -> AUTHZ:  ensureAuthenticatedUserHasAnyOf(roles)
+activate AUTHZ
+
+deactivate AUTHZ
+
+AUC -> UMS: registerNewUser(email, password, firstName, lastName, email, roles, createdOn)
+activate UMS
+
+UMS --> AUC: user
+deactivate UMS
+
+AUC --> AUC: user
+deactivate AUC
+
+AUC --> RUUI: user
+deactivate AUC
+
+end
+
+RUUI --> AD: success
+
+deactivate AD
+
+@enduml

@@ -1,0 +1,224 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+skinparam sequenceMessageAlign left
+
+Participant "<<Presentation>>\nSetupRecruitmentProcessUI" as UI
+Participant "<<Application>>\nSetupRecruitmentProcessController" as CTRL
+Participant "<<Infrastructure>>\nJobOpeningManagementService" as SERVICEJO
+Participant "<<Infrastructure>>\nRecruitmentProcessManagementService" as SERVICERP
+Participant "<<Persistence>>\n:PersistenceContext" as PCON
+Participant "<<Factory>>\n:RepositoryFactory" as REPOFAC
+Database "<<Infrastructure>>\nJobOpeningRepository" as JREPO
+Participant "List<JobOpening> allJobOpenings" as JLIST
+Participant "List<JobOpening> allIncompleteJobOpeningsDTO" as JLISTDTO
+Participant "<<Persistence>>\n<<Repository>>\nRecruitmentProcessRepository" as RREPO
+Participant "List<PhaseDTO> listPhaseDTO" as PLIST
+Participant "<<Domain>>\n<<Root Entity>>\nRecruitmentProcess" as R
+
+Activate UI
+
+
+
+    UI -> CTRL**: create()
+
+    UI -> CTRL: listAllIncompleteJobOpenings()
+
+    Activate CTRL
+
+    CTRL -> SERVICEJO**: create()
+
+    CTRL -> SERVICEJO: listAllIncompleteJobOpenings()
+
+    Activate SERVICEJO
+
+    SERVICEJO -> PCON: getInstance()
+
+    Activate PCON
+
+    PCON --> SERVICEJO: repositories
+
+    Deactivate PCON
+
+    SERVICEJO -> REPOFAC: create()
+
+    Activate REPOFAC
+
+    REPOFAC -> JREPO: create()
+
+    Deactivate REPOFAC
+
+    Activate JREPO
+
+    SERVICEJO -> JREPO: findAll()
+
+    JREPO --> SERVICEJO: allJobOpenings
+
+    SERVICEJO -> JLISTDTO**: create()
+
+    loop for each obj in the list
+
+        SERVICEJO -> JLIST: obj = get(i)
+
+        alt if obj.status == "C"
+
+            Activate JLIST
+
+            Deactivate JLIST
+
+            SERVICEJO -> SERVICEJO: toDTO(obj)
+
+            SERVICEJO -> JLISTDTO: add(objDTO)
+
+            Activate JLISTDTO
+
+            Deactivate JLISTDTO
+
+        end
+
+    end
+
+    SERVICEJO --> CTRL: allIncompleteJobOpenings
+
+    Deactivate SERVICEJO
+
+    CTRL --> UI: allIncompleteJobOpenings
+
+    UI -> UI: doShow()
+
+        UI -> CTRL: findById(jobReference)
+
+        CTRL -> SERVICERP: findById(jobReference)
+
+        Activate SERVICERP
+
+        SERVICERP -> REPOFAC: getInstance()
+
+        Activate REPOFAC
+
+        REPOFAC -> JREPO: getInstance()
+
+        Deactivate REPOFAC
+
+        SERVICERP -> JREPO: findById(jobReference)
+
+        JREPO --> SERVICERP: incompleteJobOpening
+
+        SERVICERP --> CTRL: incompleteJobOpening
+
+        Deactivate SERVICERP
+
+        CTRL --> UI: incompleteJobOpening
+
+        UI -> PLIST**: create()
+
+        alt recruitmentProcess includes interview
+
+            loop for each of the 5 phases to be setup (Applications | Screening | Interviews | Analysis | Result)
+
+                UI -> UI: PhaseDTO(description, "Applications" | "Screening" | "Interviews" | "Analysis" | "Result", "To Be Started", InitialDate, FinalDate)
+
+                UI -> PLIST: add(phaseDTO)
+
+                Activate PLIST
+
+                Deactivate PLIST
+
+            end
+
+            UI -> CTRL: setupRecruitmentProcess(InitialDateRecruitment, FinalDateRecruitment, listPhase, incompleteJobOpening)
+
+            CTRL -> SERVICERP: setupRecruitmentProcess(InitialDateRecruitment, FinalDateRecruitment, listPhase, incompleteJobOpening)
+
+            Activate SERVICERP
+
+            SERVICERP -> R: create(InitialDateRecruitment, FinalDateRecruitment, listPhase, incompleteJobOpening)
+
+            SERVICERP -> RREPO: save(recruitmentProcess)
+
+            SERVICERP --> CTRL: recruitmentProcess
+
+            Deactivate SERVICERP
+
+            CTRL -> SERVICEJO: setupJobOpeningWithRecruitmentProcess(recruitmentProcess, incompleteJobOpening)
+
+            Activate SERVICEJO
+
+            SERVICEJO -> REPOFAC: getInstance()
+
+            Activate REPOFAC
+
+            REPOFAC -> JREPO: getInstance()
+
+            Deactivate REPOFAC
+
+            SERVICEJO -> SERVICEJO: incompleteJobOpening.status = "RPC"
+
+            SERVICEJO -> SERVICEJO: incompleteJobOpening.recruitmentProcess = recruitmentProcess
+
+            SERVICEJO -> JREPO: save(incompleteJobOpening)
+
+            SERVICEJO --> CTRL
+
+            CTRL --> UI
+
+            UI -> UI: doShow()
+
+        else recruitmentProcess doesn't include interview
+
+
+
+            loop for each of the 4 phases to be setup (Applications | Screening | Analysis | Result)
+
+
+                UI -> UI: PhaseDTO(description, "Applications" | "Screening" | "Interviews" | "Analysis" | "Result", "To Be Started", InitialDate, FinalDate)
+
+                UI -> PLIST: add(phaseDTO)
+
+                Activate PLIST
+
+                Deactivate PLIST
+
+            end
+
+            UI -> CTRL: setupRecruitmentProcess(InitialDateRecruitment, FinalDateRecruitment, listPhase, incompleteJobOpening)
+
+            CTRL -> SERVICERP: setupRecruitmentProcess(InitialDateRecruitment, FinalDateRecruitment, listPhase, incompleteJobOpening)
+
+            Activate SERVICERP
+
+            SERVICERP -> R: create(InitialDateRecruitment, FinalDateRecruitment, listPhase, incompleteJobOpening)
+
+            SERVICERP -> RREPO: save(recruitmentProcess)
+
+            SERVICERP --> CTRL: recruitmentProcess
+
+            Deactivate SERVICERP
+
+            CTRL -> SERVICEJO: setupJobOpeningWithRecruitmentProcess(recruitmentProcess, incompleteJobOpening)
+
+            Activate SERVICEJO
+
+            SERVICEJO -> REPOFAC: getInstance()
+
+            Activate REPOFAC
+
+            REPOFAC -> JREPO: getInstance()
+
+            Deactivate REPOFAC
+
+            SERVICEJO -> SERVICEJO: incompleteJobOpening.status = "RPC"
+
+            SERVICEJO -> SERVICEJO: incompleteJobOpening.recruitmentProcess = recruitmentProcess
+
+            SERVICEJO -> JREPO: save(incompleteJobOpening)
+
+            SERVICEJO --> CTRL
+
+            CTRL --> UI
+
+            UI -> UI: doShow()
+        end
+
+@enduml

@@ -1,0 +1,44 @@
+@startuml class-diagram-get-job-openings
+title List Job JobOpenings - Class Diagram
+
+
+class XxxUI <<Presentation>> {
+}
+
+class XxxController <<Application>> {
+    + getJobOpeningList()
+}
+
+class AuthorizationService <<Service>> {
+    + loggedinUserWithPermissions(BaseRole.CUSTOMER_MANAGER)
+}
+
+class JobOpeningManagementService <<Service>> {
+    + jobOpeningsOfCustomerManager(username)
+}
+
+class JobOpeningDTOService <<Service>> {
+    + convertToDTO(jobOpeningList)
+}
+
+class JobOpening <<Domain>> <<Aggregate Root>> {
+    + toDTO()
+}
+
+class JobOpeningRepository <<Persistence>> <<Repository>> {
+    + getJobOpeningListMatchingCustomerManager(customerManagerUsername)
+}
+
+
+XxxUI .left.> XxxController
+
+XxxController ..> AuthorizationService
+XxxController ..> JobOpeningManagementService
+
+JobOpeningManagementService ..> JobOpeningRepository
+JobOpeningManagementService ..> JobOpeningDTOService
+
+JobOpeningDTOService ..> JobOpening
+
+
+@enduml

@@ -1,0 +1,26 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+class FullClassName <<(V,#FF8B40) value object>> {}
+
+package "<<aggregate>> Interview Model" {
+    entity InterviewModel <<entity>> <<root>>  {}
+    class InterviewModelName <<(V,#FF8B40) value object>> <<identifier>> {}
+    class InterviewModelDescription <<(V,#FF8B40) value object>> {}
+
+}
+package "<<aggregate>> Requirement Specification" {
+    entity RequirementSpecification <<entity>> <<root>>  {}
+    class RequirementName <<(V,#FF8B40) value object>> <<identifier>> {}
+    class RequirementDescription <<(V,#FF8B40) value object>> {}
+}
+
+InterviewModel --> "1" InterviewModelName: identifies <
+InterviewModel --> "1" InterviewModelDescription: describes <
+InterviewModel --> "1" FullClassName: configures <
+'--
+RequirementSpecification --> "1" RequirementName: identifies <
+RequirementSpecification --> "1" RequirementDescription: describes <
+RequirementSpecification --> "1" FullClassName: configures <
+
+@enduml

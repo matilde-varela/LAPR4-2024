@@ -1,0 +1,72 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+skinparam sequenceMessageAlign left
+
+Participant "<<Presentation>>\nRegisterPluginUI" as UI
+Participant "<<Application>>\nRegisterPluginController" as CTRL
+Participant "<<Infrastructure>>\nRequirementSpecificationManagementService" as SERVICERS
+Participant "<<Domain>>\n<<Root Entity>>\nRequirementSpecification" as RS
+Participant "<<Domain>>\n<<Value Object>>\nRequirementName" as RSNAME
+Participant "<<Domain>>\n<<Value Object>>\nRequirementDescription" as RSDESC
+Participant "<<Domain>>\n<<Value Object>>\nFullClassName" as RSPLUGIN
+Database "<<Infrastructure>>\nRequirementSpecificationRepository" as RSREPO
+
+Activate UI
+
+    UI -> CTRL**: create()
+
+    UI -> CTRL: registerRequirementPlugin(String: nameRequirement, String: description, String: class)
+
+    Activate CTRL
+
+    CTRL -> SERVICERS**: create()
+
+    CTRL -> SERVICERS: registerInterviewPlugin(String: nameRequirement, String: description, String: class)
+
+    Activate SERVICERS
+
+    SERVICERS -> RS**: create(String: nameRequirement, String: description, String: class)
+
+    Activate RS
+
+    RS -> RSNAME**: create()
+
+    RS -> RSNAME: nameOfPlugin(nameRequirement)
+
+    Activate RSNAME
+
+    Deactivate RSNAME
+
+    RS -> RSDESC**: create()
+
+    RS -> RSDESC: descriptionOfPlugin(description)
+
+    Activate RSDESC
+
+    Deactivate RSDESC
+
+    RS -> RSPLUGIN**: create()
+
+    RS -> RSPLUGIN: classNameOfPlugin(fullClassName)
+
+    Activate RSPLUGIN
+
+    Deactivate RSPLUGIN
+
+    SERVICERS -> RSREPO: save(requirementSpecification)
+
+    Activate RSREPO
+
+    Deactivate RSREPO
+
+    SERVICERS --> CTRL: registerRequirementPlugin
+
+    Deactivate SERVICERS
+
+    CTRL --> UI: registerRequirementPlugin
+
+    UI -> UI: doShow()
+
+@enduml

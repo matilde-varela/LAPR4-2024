@@ -1,0 +1,126 @@
+@startuml
+
+
+
+abstract class AbstractUI {
+    # doShow()
+    # show()
+    # mainLoop()
+}
+
+class AuthorizationService {
+    + loggedinUserWithPermissions(roles)
+}
+
+class UserManagementService {
+    + registerNewUser(email, password, name, email, roles)
+}
+class CustomerManagementService {
+    +  registerNewCustomer(companyName, address, customerCode,\ncustomerManager,email)
+}
+
+interface EventPublisher{
+    + publish()
+}
+interface EventHandler{
+    + onEvent()
+}
+interface DomainEvent{
+    + occurredAt()
+    + registeredAt()
+}
+interface DomainRepository{
++ save(customer)
+}
+
+
+
+class RegisterCustomerUI {
+
+}
+
+class RegisterCustomerController{
++ registerCustomer(companyName, address, customerCode,email)
+}
+class AddCustomerOnNewCustomerUserRegisteredController{
++ registerCustomer(newCustomerRegisteredEvent)
+}
+class GeneratePasswordService {
++ generatePassword(): RandomPassword
+}
+
+class RandomPassword{
+- rawPassword
++ RandomPassword() : RandomPassword
+- RandomPassword(int) : RandomPassword
+}
+
+class Customer{
++ Customer(companyName, address,\ncustomerCode, customerManager, customerUser)
+}
+
+
+interface CustomerRepository {
++ save(Customer)
+}
+class CustomerCode <<(V,#FF8B40) value object>>  {
+- code
++ CustomerCode(code)
+}
+class CompanyName <<(V,#FF8B40) value object>> {
+- name
++ CompanyName(name)
+}
+class Address <<(V,#FF8B40) value object>> {
+- streetName
+- streetNumber
+- postalCode
+- district
+- city
++ Address(streetName, streetNumber, postalCode, district, city)
+}
+class NewCustomerUserRegisteredEvent{
++ NewCustomerRegisteredEvent(companyName, address, customerCode,\ncustomerManager, customerUser)
+}
+abstract class DomainEventBase {
+}
+class NewCustomerUserRegisteredWatchDog{
+}
+
+class SystemUser{
+}
+
+AbstractUI <|-- RegisterCustomerUI
+RegisterCustomerUI .-> RegisterCustomerController
+
+
+NewCustomerUserRegisteredEvent --|> DomainEventBase
+NewCustomerUserRegisteredEvent .--|> DomainEvent
+
+NewCustomerUserRegisteredWatchDog .-up|> EventHandler
+NewCustomerUserRegisteredWatchDog .--> AddCustomerOnNewCustomerUserRegisteredController
+EventPublisher .-> EventHandler
+Customer --> CompanyName
+Customer --> CustomerCode
+Customer --> Address
+Customer --> SystemUser
+CustomerRepository .--> DomainRepository
+CustomerRepository --> Customer
+
+RegisterCustomerController --> AuthorizationService
+CustomerManagementService -> UserManagementService
+RegisterCustomerController ---> CustomerManagementService
+CustomerManagementService ---> GeneratePasswordService
+CustomerManagementService --> NewCustomerUserRegisteredEvent
+CustomerManagementService .--> EventPublisher
+
+GeneratePasswordService .--> RandomPassword
+AddCustomerOnNewCustomerUserRegisteredController .-up-> NewCustomerUserRegisteredEvent
+AddCustomerOnNewCustomerUserRegisteredController .-> Customer
+AddCustomerOnNewCustomerUserRegisteredController .-> CustomerRepository
+
+
+
+
+
+@enduml

@@ -1,0 +1,85 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+skinparam classAttributeIconSize 0
+hide empty attributes
+skinparam classBackgroundColor beige
+skinparam ArrowColor #222222
+
+
+
+'SHARED VALUE OBJETS
+
+
+
+
+'SERVICES
+
+
+'AGGREGATES
+package "<<aggregate>> Job Opening" {
+    entity JobOpening <<entity>> <<root>> {}
+    class JobFunction <<(V,#FF8B40) value object>> {}
+    class JobOpeningStatus <<(V,#FF8B40) value object>> {}
+    class ContractType <<(V,#FF8B40) value object>> {}
+    class Mode <<(V,#FF8B40) value object>> {}
+    class NumberVacancy <<(V,#FF8B40) value object>> {}
+       class Description <<(V,#FF8B40) value object>> {}
+     class JobReference <<(V,#FF8B40) value object>> <<identifier>> {}
+          class Address <<(V,#FF8B40) value object>> {}
+}
+package "<<aggregate>> Customer Manager" {
+    entity CustomerManager <<entity>> <<root>>  {}
+}
+
+
+package "<<aggregate>> Application" {
+    entity Application <<entity>><<root>>  {}
+    class ApplicationDate <<(V,#FF8B40) value object>> {}
+    class ApplicationStatus <<(V,#FF8B40) value object>> {}
+    class Interview <<(V,#FF8B40) value object>>   {}
+    class InterviewAnswer <<(V,#FF8B40) value object>>   {}
+    class InterviewResult <<(V,#FF8B40) value object>>   {}
+    class Justification <<(V,#FF8B40) value object>>   {}
+    class InterviewGrade <<(V,#FF8B40) value object>>   {}
+    class RequirementAnswer <<(V,#FF8B40) value object>>   {}
+    class RequirementResult <<(V,#FF8B40) value object>>   {}
+    class InterviewAnswer <<(V,#FF8B40) value object>>   {}
+    class Schedule <<(V,#FF8B40) value object>> {}
+     class File <<(V,#FF8B40) value object>> {}
+}
+
+
+
+
+
+CustomerManager --> "0..*" Application : overseas
+CustomerManager --> "1..*" JobOpening : selects
+'--
+JobOpening --> "1"  JobReference : includes
+JobOpening --> "1"  Mode : includes
+JobOpening --> "1"  NumberVacancy : includes
+JobOpening --> "1"  Address : includes
+JobOpening --> "1"  JobFunction : includes
+JobOpening --> "1"  Description : includes
+JobOpening --> "1"  ContractType : includes
+JobOpening --> "1" JobOpeningStatus : classified by
+JobOpening --up-> "1"  Application : associated to <
+
+'--
+Application ---> "0..1" Interview : includes
+Application --> "1" RequirementAnswer : includes
+Application ---> "1" RequirementResult : includes
+Application ---> "1..*" File : describes <
+Application ---> "1" ApplicationDate : registered by
+Application --> "1" ApplicationStatus : categorizes <
+'--
+'--
+Interview ---> "1" InterviewAnswer: described in
+Interview ---> "1" InterviewResult: classifies <
+InterviewResult -> "1" InterviewGrade: grades <
+InterviewResult --> "1" Justification: justifies <
+Interview --> "1" Schedule : follows a
+'--
+
+@enduml

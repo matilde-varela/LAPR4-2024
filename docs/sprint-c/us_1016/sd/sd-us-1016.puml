@@ -1,0 +1,83 @@
+@startuml
+autonumber
+
+title US1016 Sequence Diagram
+
+actor "Customer Manager" as CustomerManager
+
+participant ":SendNotificationEmailUI" as UI <<presentation>>
+participant ":SendNotificationEmailController" as CTRL <<application>>
+participant ":FollowUpConnectionService" as ServerService <<service>>
+participant ":JobOpeningManagementService" as JobOpeningService <<Service>>
+participant ":JobOpeningDTOService" as JobOpeningDTOService <<Service>>
+participant ":AuthorizationService" as AUTHZ <<service>>
+participant ":JobOpeningRepository" as JobOpeningRepository <<repository>>
+participant ":ApplicationRepository" as ApplicationRepository  <<repository>>
+
+note right AUTHZ
+The AuthorizationService is implemented
+in the eapli framework and will
+be used in this functionality.
+end note
+
+activate CustomerManager
+
+CustomerManager -> UI : wants to record the time and date for an interview with the candidate
+activate UI
+
+UI -> CTRL**: create
+
+UI -> CTRL: getJobOpeningList()
+activate CTRL
+CTRL -> AUTHZ:  ensureAuthenticatedUserHasAnyOf(roles)
+activate AUTHZ
+deactivate AUTHZ
+CTRL ->JobOpeningService: getJobOpeningListWithoutNotification()
+    activate JobOpeningService
+        JobOpeningService -> JobOpeningRepository: getJobOpeningList()
+
+        activate JobOpeningRepository
+            JobOpeningRepository -> JobOpeningService: JobOpeningList
+        deactivate JobOpeningRepository
+
+        JobOpeningService-> JobOpeningDTOService: convertToDto(JobOpeningList)
+        activate JobOpeningDTOService
+            JobOpeningDTOService -> JobOpeningService:JobOpeningDtoDtoList
+        deactivate JobOpeningDTOService
+        JobOpeningService -> CTRL: JobOpeningDtoDtoListDtoList
+    deactivate JobOpeningService
+    CTRL -> UI: JobOpeningDtoDtoList
+deactivate CTRL
+
+UI--> CustomerManager: Shows the job opening list
+CustomerManager-> UI: Selects a job opening
+
+UI->CTRL: sendEmail()
+activate CTRL
+    CTRL -> ApplicationRepository: applicationsForJobOpening(jobReference)
+    activate ApplicationRepository
+        ApplicationRepository-> CTRL: applications
+    deactivate ApplicationRepository
+    CTRL ->ServerService: connectToServer()
+    activate ServerService
+        ServerService --> CTRL: success
+    deactivate ServerService
+    loop for each application
+        CTRL -> ServerService: sendEmail(customerManagerEmail,candidateEmail, topic, emailBody)
+        activate ServerService
+            ServerService--> CTRL: success
+        deactivate ServerService
+
+        CTRL-> JobOpeningService: updateApplicationNotificationState()
+        activate JobOpeningService
+            JobOpeningService -> JobOpeningRepository: save(applcation)
+            activate JobOpeningRepository
+            deactivate JobOpeningRepository
+        deactivate JobOpeningService
+   end loop
+deactivate CTRL
+UI --> CustomerManager: success
+deactivate UI
+deactivate CustomerManager
+
+@enduml

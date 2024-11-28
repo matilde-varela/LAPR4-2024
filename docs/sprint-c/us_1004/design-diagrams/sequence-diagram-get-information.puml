@@ -1,0 +1,42 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+title US1004 - Sequence Diagram | Get Information
+
+autonumber
+participant ":XxxService" as MS <<service>>
+participant ":XxxDtoService" as MS_DTO <<service>>
+database ":XxxRepository" as JO_REPO <<repository>>
+participant ":Xxx" as JO <<domain>>
+
+
+  -> MS: allXxx()
+    activate MS
+
+    MS -> JO_REPO: findAll()
+    activate JO_REPO
+
+    JO_REPO --> MS: xxxList
+    deactivate JO_REPO
+
+    MS -> MS_DTO: convertToDto(xxxList)
+    activate MS_DTO
+
+    loop for each xxx
+
+        MS_DTO -> JO : toDto()
+        activate JO
+
+        JO --> MS_DTO : xxxDto
+        deactivate JO
+
+    end loop
+
+    MS_DTO --> MS: xxxDtoList
+    deactivate MS_DTO
+
+     <-- MS: xxxDtoList
+    deactivate MS
+
+
+@enduml

@@ -1,0 +1,77 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+skinparam classAttributeIconSize 0
+hide empty attributes
+skinparam classBackgroundColor beige
+skinparam ArrowColor #222222
+
+title US2000c Domain Model
+
+package "<<aggregate>> Job Opening" {
+    entity JobOpening <<entity>> <<root>> {}
+    class JobFunction <<(V,#FF8B40) value object>> {}
+    class ContractType <<(V,#FF8B40) value object>> {}
+    class Mode <<(V,#FF8B40) value object>> {}
+    class NumberVacancy <<(V,#FF8B40) value object>> {}
+       class Description <<(V,#FF8B40) value object>> {}
+     class JobReference <<(V,#FF8B40) value object>> <<identifier>> {}
+      class Rank <<(V,#FF8B40) value object>>{}
+}
+
+package "<<aggregate>> Operator" {
+    entity Operator <<entity>> <<root>> {}
+}
+
+package "<<aggregate>> Candidate" {
+    entity Candidate <<entity>>  <<root>>{}
+}
+
+package "<<aggregate>> Application" {
+    entity Application <<entity>><<root>>  {}
+    class Email <<(V,#FF8B40) value object>> {}
+    class ApplicationStatus <<(V,#FF8B40) value object>> {}
+    class CandidateName <<(V,#FF8B40) value object>> {}
+    class PhoneNumber <<(V,#FF8B40) value object>> {}
+    class Interview <<(V,#FF8B40) value object>>   {}
+    class InterviewAnswer <<(V,#FF8B40) value object>>   {}
+    class InterviewResult <<(V,#FF8B40) value object>>   {}
+    class Justification <<(V,#FF8B40) value object>>   {}
+    class InterviewGrade <<(V,#FF8B40) value object>>   {}
+    class RequirementAnswer <<(V,#FF8B40) value object>>   {}
+    class RequirementResult <<(V,#FF8B40) value object>>   {}
+    class InterviewAnswer <<(V,#FF8B40) value object>>   {}
+    class Schedule <<(V,#FF8B40) value object>> {}
+    class File <<(V,#FF8B40) value object>> {}
+}
+
+Operator --> "0..*" Candidate : registers
+Operator --> "0..*" Application : registers
+
+Candidate --> "1..*" Application : submits
+Candidate --> "1..*" JobOpening : applies for
+
+JobOpening ---> "1"  JobReference : includes
+JobOpening --> "1"  Mode : includes
+JobOpening --> "1"  NumberVacancy : includes
+JobOpening --> "1"  JobFunction : includes
+JobOpening ---> "1"  Description : includes
+JobOpening ---> "1"  ContractType : includes
+JobOpening ---> "*"  Rank : includes
+JobOpening --> "1"  Application : associated to <
+
+Application ---> "0..1" Interview : includes
+Application --> "1" RequirementAnswer : includes
+Application ---> "1" RequirementResult : includes
+Application ---> "1" Email: includes
+Application --> "1" CandidateName: includes
+Application ---> "1" PhoneNumber: includes
+Application ---> "1..*" File : describes <
+Application --> "1" ApplicationStatus : categorizes <
+
+Interview ---> "1" InterviewAnswer: described in
+Interview ---> "1" InterviewResult: classifies <
+InterviewResult -> "1" InterviewGrade: grades <
+InterviewResult --> "1" Justification: justifies <
+Interview --> "1" Schedule : follows a
+@enduml

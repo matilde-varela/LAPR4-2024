@@ -1,0 +1,38 @@
+@startuml US1014_SSD
+autonumber
+title US1016  System Sequence Diagram
+
+actor "Customer Manager" as USER
+participant "System" as SYS
+
+activate USER
+
+USER -> SYS : asks the system to notify candidates by email
+
+activate SYS
+SYS --> USER : shows confirmed applications list without notification
+deactivate SYS
+USER -> SYS : choose the application
+
+activate SYS
+SYS --> USER: confirm
+deactivate SYS
+
+USER -> SYS: ask to establish connection with server
+activate SYS
+SYS --> USER: confirm connection
+deactivate SYS
+
+USER -> SYS:ask to send the email
+activate SYS
+SYS --> USER :email confirmed success
+deactivate SYS
+
+USER -> SYS:update application notification state
+activate SYS
+SYS --> USER : success
+deactivate SYS
+
+deactivate USER
+
+@enduml

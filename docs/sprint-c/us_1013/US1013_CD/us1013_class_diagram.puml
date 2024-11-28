@@ -1,0 +1,180 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+title US1013 Class Diagram
+
+abstract class AbstractUI {
++ show()
+}
+
+interface DTOable {
++ toDto()
+}
+
+class ApplicationRankingUI {
++ show()
+}
+
+class ApplicationRankingController {
++ getCustomersList()
++ getJobOpeningList()
++ getRankOrderList(String jobReference)
++ getApplicationFile(ApplicationDTO applicationDTO, String filename)
++ updateRanking(jobOpeningDTO, applicationDTO, order)
++ checkNeededApplicationsAreRanked(String jobReference)
+}
+
+class AuthorizationService {
++ loggedinUserWithPermissions(Role BaseRole.CUSTOMER_MANAGER)
+}
+
+class DescendingInterviewResultComparator {
++ compare(Application a1, Application a2)
+}
+
+class CustomerManagementService {
++ getAssignedCustomerCodesList(Username username)
+}
+class CustomerRepository {
++ getCustomersByUsername(Username username)
+}
+
+
+class Customer {
++ customerCode()
++ toDto()
+}
+
+class JobOpeningManagementService {
++ jobOpeningsOfCustomerManager(Username username)
++ getJobOpeningsFromCustomerCodes(List<CustomerCodeDTO> assignedCustomerCodesList)
++ getApplications(String jobReference)
++ checkNeededApplicationsAreRanked(JobOpeningDTO jobOpeningDTO)
+}
+
+class JobOpeningRepository {
++ getCustomerManagerActiveJobOpenings(CustomerCode customerCode)
++ getApplicationsFromJobReference(String jobReference)
++ getJobOpeningFromDTO(JobOpeningDTO jobOpeningDTO)
+}
+
+class JobOpening {
++ toDTO()
+}
+
+class JobOpeningDTOService {
++ convertToDTO(List<JobOpening> jobOpeningList)
+}
+
+class RecruitmentProcessManagementService {
++ checkIfRecruitmentProcessIsInAnalysisPhase(String jobReference)
+}
+class RecruitmentProcess {
++ currentActivePhase()
++ hasInterview()
+}
+class RecruitmentProcessRepository {
++ getRecruitmentProcessByJobReference(JobReference jobReference)
+}
+
+class RankManagementService {
++ getRank(String jobReference)
++ updateRanking(jobOpeningDTO, applicationDTO, order)
++ checkNeededApplicationsAreRanked(List<Application> applicationsList, int numberVacancies)
++ calculateNumberOfRankOrdersToSave(numVacancies)
+}
+
+class RankOrder {
++ create(Application application, int score)
++ toDTO()
+}
+
+class RankOrderDTO {
+- int numberRanked
+- ApplicationDTO applicationDTO
+}
+
+class Rank {
++ rankOrderUntilOrder(order)
++ rankOrdersSinceOrder(order)
+}
+
+class RankRepository {
++ getRankFromJobReference(JobReference jobReference)
++ save(RankOrder rankOrder)
+}
+
+class ApplicationListDTOService {
++ convertApplicationsToDTO(List<Application> applicationsList)
+}
+class ApplicationManagementService {
++ getApplicationFromDTO(ApplicationDTO applicationDTO)
++ getApplicationFileContent(ApplicationDTO applicationDTO, String filename)
+}
+class ApplicationRepository {
++ getApplication(ApplicationDTO applicationDTO)
+}
+
+
+class ApplicationFilePopUpWindow {
++ create(String applicationFileContent)
++ show()
+}
+
+
+'ASSOCIATIONS
+AbstractUI <|.left. ApplicationRankingUI : implements
+DTOable <|.. JobOpening : implements
+DTOable <|.. RankOrder : implements
+DTOable <|... Customer : implements
+
+'UI
+ApplicationRankingUI -left-> ApplicationFilePopUpWindow
+
+'CONTROLLER
+ApplicationRankingUI ..> ApplicationRankingController
+ApplicationRankingController ..> RecruitmentProcessManagementService
+ApplicationRankingController .> AuthorizationService
+ApplicationRankingController ..> JobOpeningManagementService
+ApplicationRankingController ..> ApplicationManagementService
+ApplicationRankingController ..> RankManagementService
+
+ApplicationRankingController ..> JobOpeningDTO
+ApplicationRankingController ..> ApplicationDTO
+ApplicationRankingController ..> RankOrderDTO
+
+
+'CUSTOMER
+CustomerManagementService --> CustomerRepository
+CustomerRepository --> Customer
+Customer --> CustomerDTO
+
+'JOB OPENING
+JobOpeningManagementService --> JobOpeningRepository
+JobOpeningManagementService ..> CustomerManagementService
+JobOpeningManagementService --> JobOpeningDTOService
+JobOpeningRepository --> JobOpening
+JobOpeningDTO <-- JobOpening
+JobOpeningDTOService --> JobOpeningDTO
+JobOpeningManagementService --> ApplicationListDTOService
+JobOpeningManagementService --> RankManagementService
+JobOpeningManagementService ..> CustomerDTO
+
+'RANK
+RankManagementService ..> RankRepository
+RankRepository --> RankOrder
+RankOrderDTO <-- RankOrder
+RankOrderDTO -> "1" ApplicationDTO
+RankManagementService --> ApplicationManagementService
+
+'APPLICATION
+ApplicationManagementService --> ApplicationRepository
+ApplicationRepository --> Application
+Application --> ApplicationDTO
+
+'RECRUITMENT PROCESS
+RecruitmentProcessManagementService --> RecruitmentProcessRepository
+RecruitmentProcessRepository --> RecruitmentProcess
+RecruitmentProcessManagementService --> RecruitmentProcess
+
+@enduml

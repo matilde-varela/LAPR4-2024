@@ -1,0 +1,88 @@
+@startuml US2003_class_diagram
+'https://plantuml.com/class-diagram
+
+title 2003 Class Diagram
+
+interface AbstractUI {
+# doShow()
+}
+
+class GenerateRequirementsTemplateFileUI <<presentation>>  {
++ doShow()
+}
+
+class GenerateRequirementsTemplateFileController <<application>> {
++ create()
++ getJobOpeningList()
++ exportTemplateFile(JobOpeningDTO jobOpeningDTO, String directoryPath)
+}
+
+class RequirementsTemplateManagerService <<service>> {
++ getRequirementFromJobOpening(JobOpeningDTO jobOpeningDTO)
++ generateNewTemplate(RequirementSpecification requirementSpecification, String directoryPath)
+}
+
+class RequirementSpecificationRepository <<persistence>>\n<<repository>> {
++ requirementSpecificationFromDTO(JobOpeningDTO jobOpeningDTO)
+}
+
+class RequirementsTemplatePlugin <<plugin>> {
++ newRequirementsSpecificationsTemplate()
++ generateFile()
++ export()
+}
+
+class RequirementsTemplateParser <<parser>> {
++ checkFileSyntax(File templateFile)
+}
+
+class AuthorizationService <<service>> {
++ loggedinUserWithPermissions(Role ... Action BaseRole.OPERATOR)
+}
+
+class JobOpeningRepository <<Persistence>> <<Repository>> {
++ rebuild(JobOpening: entity)
++ getUNFINISHEDJobOpenings()
+}
+
+class JobOpeningManagementService <<Service>> {
++ getUNFINISHEDJobOpenings()
+}
+
+class JobOpeningListDTOService <<Service>> {
++ convertToDTO(List<JobOpening> jobOpeningList)
+}
+
+class JobOpening <<Domain>> <<Aggregate Root>> {
+- String function
+- ContractType contractType
+- WorkMode workMode
+- Address jobOpeningAddress
+- String jobReference
+- Integer numVacancies
+- String description
+- File requirementsSpecificationsFile
++ create()
+}
+
+
+'Associations
+AbstractUI <|.up. GenerateRequirementsTemplateFileUI : implements
+GenerateRequirementsTemplateFileUI .left.> GenerateRequirementsTemplateFileController
+
+GenerateRequirementsTemplateFileController .left.> AuthorizationService
+GenerateRequirementsTemplateFileController ...> JobOpeningManagementService
+GenerateRequirementsTemplateFileController ..> JobOpeningListDTOService
+GenerateRequirementsTemplateFileController ..> RequirementsTemplateManagerService
+
+'Domain Layer
+JobOpeningManagementService --> JobOpeningRepository
+JobOpeningManagementService --> JobOpening
+JobOpeningListDTOService --> JobOpening
+JobOpeningRepository -> JobOpening
+
+RequirementsTemplateManagerService ..> RequirementSpecificationRepository
+RequirementsTemplateManagerService ..> RequirementsTemplatePlugin
+RequirementsTemplatePlugin ..> RequirementsTemplateParser
+
+@enduml

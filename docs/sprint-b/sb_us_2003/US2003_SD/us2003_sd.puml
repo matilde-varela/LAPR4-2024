@@ -1,0 +1,100 @@
+@startuml US2003_SD
+
+title [US2003 - Sequence Diagram]
+
+box System #LightBlue
+participant "<<presentation>>\n:GenerateRequirementsTemplateFileUI" as UI
+control "<<application>>\n:GenerateRequirementsTemplateFileController" as CTRL
+participant "<<service>>\n:AuthorizationService" as AuthSvc
+participant "<<service>>\n:JobOpeningManagementService" as JobManagement
+participant "<<service>>\n:JobOpeningListDTOService" as JobOpeningListDTO
+database "<<repository>>\n:JobOpeningRepository" as JobOpeningRepository
+participant "<<domain>>\n:JobOpening" as JobOpening
+participant "<<service>>\n:RequirementsTemplateManagerService" as Manager
+database "<<repository>>\n:RequirementSpecificationRepository" as ReqRep
+end box
+
+box Plugin #LightPink
+participant "<<Plugin>>\n:RequirementsTemplatePlugin" as Plugin
+participant "<<Parser/Interpreter>>\n:RequirementsTemplateParser" as Parser
+end box
+
+
+activate UI
+
+UI -> CTRL : create()
+activate CTRL
+deactivate CTRL
+
+UI -> CTRL : getJobOpeningList()
+activate CTRL
+
+    CTRL -> AuthSvc : loggedinUserWithPermissions(BaseRole.OPERATOR)
+    activate AuthSvc
+    deactivate AuthSvc
+
+    CTRL -> JobManagement : getUNFINISHEDJobOpenings()
+    activate JobManagement
+
+        JobManagement -> JobOpeningRepository : getUNFINISHEDJobOpeningList()
+        activate JobOpeningRepository
+        deactivate JobOpeningRepository
+
+    deactivate JobManagement
+
+CTRL -> JobOpeningListDTO : convertToDTO(jobOpeningList)
+activate JobOpeningListDTO
+
+    loop for each JobOpening
+        JobOpeningListDTO -> JobOpening : toDTO()
+        activate JobOpening
+        deactivate JobOpening
+    end loop
+deactivate JobOpeningListDTO
+
+CTRL --> UI : jobOpeningListDTO
+deactivate CTRL
+
+UI -> CTRL : exportTemplateFile(jobOpeningDTO, directoryPath)
+
+'get job positions/plugins
+activate CTRL
+
+CTRL -> Manager : getRequirementFromJobOpening(jobOpeningDTO)
+activate Manager
+
+Manager -> ReqRep : requirementSpecificationFromDTO(jobOpeningDTO)
+deactivate Manager
+activate ReqRep
+
+ReqRep -[#lightblue]> ReqRep
+deactivate ReqRep
+
+
+    CTRL -> Manager : exportTemplateFile(requirementSpecification, directoryPath)
+    activate Manager
+
+        Manager -> Plugin : generateNewTemplate(requirementSpecification, directoryPath)
+    activate Plugin
+
+        Plugin -> Plugin : generateFile()
+
+        Plugin -> Parser : checkFileSyntax(templateFile)
+        note left: Along with the requirements\n template grammar.
+
+        activate Parser
+        deactivate Parser
+
+        Plugin -> Plugin : export()
+       Plugin --> Manager : confirmation
+    deactivate Plugin
+
+    Manager --> CTRL : confirmation
+    deactivate Manager
+
+    CTRL --> UI : confirmation
+deactivate CTRL
+
+deactivate UI
+
+@enduml

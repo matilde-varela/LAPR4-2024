@@ -1,0 +1,27 @@
+@startuml US1021_SSD
+
+title US1021 System Sequence Diagram
+
+autonumber
+
+actor "Customer Manager" as USER
+participant "System" as SYS
+
+activate USER
+
+USER -> SYS : asks to display all the data of an application
+activate SYS
+SYS --> USER : displays the applications and asks the user to select\n one application
+deactivate SYS
+
+loop until the user wants
+USER -> SYS : selects the application
+activate SYS
+SYS --> USER : shows all the information of the application, including\n interviews and requirement process
+deactivate SYS
+
+end loop
+
+deactivate USER
+
+@enduml

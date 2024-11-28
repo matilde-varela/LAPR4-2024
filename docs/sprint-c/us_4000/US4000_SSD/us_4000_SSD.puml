@@ -1,0 +1,32 @@
+@startuml US4000_SSD
+
+title US4000 System Sequence Diagram
+
+autonumber
+
+actor "Customer Manager" as CM
+participant "System" as SYS
+
+activate CM
+
+CM -> SYS : asks to see the Top 20 Used Words of a candidate
+
+activate SYS
+
+SYS --> CM : asks to select a candidate
+deactivate SYS
+
+CM -> SYS : selects a candidate
+activate SYS
+
+SYS --> CM : asks to select an application
+deactivate SYS
+
+CM -> SYS : selects an application
+activate SYS
+SYS -> SYS : evaluates candidate's application files
+
+SYS --> CM : shows Top 20 Words used by the candidate
+deactivate SYS
+
+@enduml

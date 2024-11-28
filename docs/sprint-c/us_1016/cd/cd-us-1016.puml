@@ -1,0 +1,79 @@
+@startuml
+
+
+' Services
+
+abstract class AbstractUI {
+    # doShow()
+    # show()
+    # mainLoop()
+}
+abstract class AbstractListUI{
+    # elements()
+    # elementPrinter();
+}
+class SendNotificationEmailUI {
+
+}
+class AuthorizationService {
+    + ensureAuthenticatedUserHasAnyOf(roles)
+}
+
+class FollowUpConnectionService {
+    + connectToServer()
+    + sendEmail(customerManagerEmail, candidateEmail, topic, emailBody)
+}
+
+class JobOpeningManagementService {
+    + getJobOpeningListWithoutNotification()
+    + updateApplicationNotificationState()
+}
+class JobOpeningDtoService {
+    + convertToDto()
+}
+
+class JobOpeningRepository{
+    + getJobOpeningList()
+    + save()
+}
+
+class ApplicationRepository{
+    + applicationsForJobOpenings(jobReference)
+    + save()
+}
+
+class SendNotificationEmailController  {
++ getApplicationList()
++ sendEmail()
+}
+
+class JobOpening{
+    + toDto()
+}
+Interface DomainRepository{
+    + save()
+    + ofIdentify()
+}
+
+AbstractUI <|-- AbstractListUI
+AbstractUI <|- SendNotificationEmailUI
+
+
+SendNotificationEmailUI .--> SendNotificationEmailController
+SendNotificationEmailController --> AuthorizationService
+SendNotificationEmailController --> JobOpeningManagementService
+SendNotificationEmailController --> FollowUpConnectionService
+SendNotificationEmailController --> ApplicationRepository
+
+JobOpeningManagementService --> JobOpeningDtoService
+JobOpeningManagementService ..> JobOpening
+JobOpeningManagementService --> JobOpeningRepository
+
+JobOpeningDtoService ..> JobOpening
+
+JobOpeningRepository ..> DomainRepository
+
+ApplicationRepository --> DomainRepository
+
+
+@enduml

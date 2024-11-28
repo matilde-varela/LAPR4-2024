@@ -1,0 +1,40 @@
+[DN]-1 "What is the value of pi with only two decimal places?"
+A:. 3.14
+
+[SA]-1 "What does SQL stands for?"
+A:. Structured Query Language
+
+[T]-1 "How long can you focus on a problem?"
+A:. 04:00
+
+[MC]-1 "Which of the following are commonly used front-end web development languages?"
+1) HTML
+2) Python
+3) CSS
+4) Java
+5) JavaScript
+6) SQL
+A:. HTML CSS JavaScript
+
+[WN]-2 "How many bits are in a byte?"
+A:. 8
+
+[WN]-1 "How many years have you been working with JavaScript?"
+A:. 5
+
+[D]-1 "When was released the programming language Python?"
+A:. 20/02/1991
+
+[NS]-1 "How often do you use git on a scale of one to five?"
+A:. 4
+
+[SC]-1 "Which of the following is an object-oriented programming language?"
+1) Python
+2) HTML
+3) Java
+4) SQL
+A:. Java
+
+[TF]-1 "Is Java a high-level language?"
+A:. True
+

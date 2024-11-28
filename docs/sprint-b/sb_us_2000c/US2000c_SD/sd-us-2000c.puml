@@ -1,0 +1,54 @@
+@startuml US2000c_SD
+autonumber
+title US2000c Sequence Diagram
+
+actor "Operator" as USER
+
+participant "ListCandidatesUI" as UI <<presentation>>
+participant "ListCandidatesController" as CTRL <<controller>>
+participant "AuthorizationService" as AUTHZ <<service>>
+participant "CandidateManagementService" as CMS <<service>>
+participant "<<repository>>\n:CandidateRepository" as CandidateRepository
+participant "<<service>>\n:ListCandidatesDTOService" as DTO
+
+activate USER
+
+USER -> UI: wants to list all candidates
+activate UI
+
+UI -> CTRL **: create
+
+
+UI -> CTRL : getCandidatesList()
+activate CTRL
+
+CTRL -> AUTHZ:  ensureAuthenticatedUserHasAnyOf(BaseRoles.OPERATOR)
+activate AUTHZ
+AUTHZ -> CTRL:  return if the logged user has the right permissions
+deactivate AUTHZ
+
+CTRL-> CMS: getCandidatesList()
+activate CMS
+
+    CMS -> CandidateRepository: getAllCandidatesListOrderedByName()
+    activate CandidateRepository
+    CandidateRepository -> CMS: candidatesList
+    deactivate CandidateRepository
+
+    CMS -> CTRL: candidatesList
+deactivate CMS
+
+CTRL -> DTO : toDTO()
+activate DTO
+deactivate DTO
+
+CTRL --> UI : candidatesListDTO
+deactivate CTRL
+
+UI -> UI : doShow()
+UI -> USER : success
+
+deactivate UI
+deactivate USER
+
+@enduml

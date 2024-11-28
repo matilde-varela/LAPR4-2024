@@ -1,0 +1,27 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+skinparam classAttributeIconSize 0
+hide empty attributes
+skinparam classBackgroundColor beige
+skinparam ArrowColor #222222
+
+
+
+'SHARED VALUE OBJETS
+
+
+class PluginJarFile <<(V,#FF8B40) value object>> {}
+
+
+package "<<aggregate>> Requirement Specification" {
+    entity RequirementSpecification <<entity>> <<root>>  {}
+    class RequirementName <<(V,#FF8B40) value object>> <<identifier>> {}
+    class RequirementDescription <<(V,#FF8B40) value object>> {}
+}
+
+'ASSOCIATIONS
+RequirementSpecification --> "1" RequirementName: identifies <
+RequirementSpecification --> "1" RequirementDescription: describes <
+RequirementSpecification -up-> "1" PluginJarFile: configures <
+@enduml

@@ -1,0 +1,35 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+skinparam classAttributeIconSize 0
+hide empty attributes
+skinparam classBackgroundColor beige
+skinparam ArrowColor #222222
+
+
+
+'SHARED VALUE OBJETS
+
+
+
+package "<<aggregate>> Customer Manager" {
+    entity CustomerManager <<entity>> <<root>>  {}
+}
+package "<<aggregate>> Customer" {
+    entity Entity <<entity>> <<root>>  {}
+    class CustomerCode <<(V,#FF8B40) value object>> <<identifier>> {}
+    class CompanyName <<(V,#FF8B40) value object>> {}
+     class Address <<(V,#FF8B40) value object>> {}
+}
+
+
+
+
+Entity --> "1" CompanyName : is described by
+Entity --> "1" Address : is located at
+Entity --> "1" CustomerCode : is identified by
+'--
+CustomerManager --> "1..*" Entity: manages
+
+
+@enduml

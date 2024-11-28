@@ -1,0 +1,149 @@
+@startuml US2002_SD
+
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+title [US2002 - Sequence Diagram]
+
+actor "Operator" as OP
+participant "<<presentation>>\n:RegisterJobOpeningApplicationUI" as UI
+participant "<<application>>\n:RegisterJobOpeningApplicationController" as CTRL
+participant "<<service>>\n:JobOpeningManagementService" as JobManagement
+database "<<repository>>\n:JobOpeningRepository" as JobOpeningRepository
+participant "<<domain>>\n:JobOpening" as JobOpening
+participant "<<service>>\n:JobOpeningManagementService" as JobManagement
+participant "<<domain>>\n:Candidate" as Candidate
+database "<<repository>>\n:CandidateRepository" as CandidateRepository
+participant "<<service>>\n:ApplicationManagementService" as AppManagement
+database "<<repository>>\n:ApplicationRepository" as ApplicationRepository
+participant "<<domain>>\n:Application" as Application
+
+activate OP
+
+OP -> UI : asks to register an application
+activate UI
+
+UI -> CTRL : create()
+
+activate CTRL
+deactivate CTRL
+
+UI --> OP : asks for the shared folder where the files used for the application are
+deactivate UI
+
+OP -> UI : selects the shared folder
+activate UI
+
+UI --> OP : shows the job openings and asks to select one
+deactivate UI
+
+OP -> UI : selects the jobOpening
+activate UI
+
+
+UI -> CTRL : registerApplication(sharedFolder, jobOpening)
+activate CTRL
+
+CTRL -> CTRL : getFiles(shareFolder)
+activate CTRL
+
+CTRL --> CTRL : files
+deactivate CTRL
+
+CTRL -> CTRL : getCandidate(number)
+activate CTRL
+
+CTRL -> CandidateRepository : findByPhoneNumber(number)
+activate CandidateRepository
+
+CandidateRepository --> CTRL : candidate
+deactivate CandidateRepository
+
+CTRL --> CTRL :
+deactivate CTRL
+
+
+alt candidate == false
+
+
+CTRL -> Candidate : register(name, email, phoneNumber)
+activate Candidate
+deactivate Candidate
+
+'check what to put here for register the candidate and the user
+
+note right: The controller of the US2000a will be called, since the process\n of register the candidate is the same
+
+
+end alt
+
+
+deactivate Application
+
+CTRL -> CTRL : registerApplication(files, applicationDate, phone, jobOpeningDTO)
+
+
+CTRL -> CandidateRepository : findByPhoneNumber(number)
+activate CandidateRepository
+
+CandidateRepository --> CTRL : candidate
+deactivate CandidateRepository
+
+CTRL -> AppManagement : registerApplication(files, applicationDate, candidate)
+activate AppManagement
+
+AppManagement -> Application : create(files, applicationDate, candidate)
+activate Application
+deactivate Application
+
+AppManagement -> ApplicationRepository : save(application)
+activate ApplicationRepository
+
+ApplicationRepository --> AppManagement : application
+deactivate ApplicationRepository
+
+AppManagement --> CTRL : application
+deactivate AppManagement
+
+CTRL -> JobManagement : getJobOpening(jobOpeningDTO)
+activate JobManagement
+
+JobManagement --> CTRL : jobOpening
+deactivate JobManagement
+
+
+CTRL -> JobOpeningRepository : save(jobOpening)
+activate JobOpeningRepository
+deactivate JobOpeningRepository
+
+
+note right: It will saved the jobOpening\n with the new application
+
+
+CTRL --> UI : application
+deactivate CTRL
+
+
+
+
+'Application -> ApplicationRepository : create(applicationDate, applicationStatus,\n requirementAnswer, requirementResult, file,\n interview, schedule, interviewResult,\n interviewGrade, interviewAnswer, justification)
+'activate ApplicationRepository
+
+
+
+deactivate CTRL
+
+
+UI --> OP : shows operation success
+deactivate UI
+
+
+deactivate OP
+
+
+
+@enduml
+

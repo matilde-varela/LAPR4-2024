@@ -1,0 +1,103 @@
+@startuml
+autonumber
+
+title US1018 Sequence Diagram
+
+actor "Customer Manager" as CustomerManager
+
+participant ":EvaluateInterviewsUI" as UI <<presentation>>
+participant ":EvaluateInterviewsController" as CTRL <<application>>
+participant ":JobOpeningManagementService" as JobOpeningService <<Service>>
+participant ":JobOpeningDTOService" as JobOpeningDTOService <<Service>>
+participant ":AuthorizationService" as AUTHZ <<service>>
+participant ":JobOpeningRepository" as JobOpeningRepository <<repository>>
+participant ":ApplicationRepository" as ApplicationRepository <<repository>>
+participant ":InterviewModelRepository" as InterviewRepository <<repository>>
+participant ":FileManagement" as FM <<interface>>
+
+
+participant ":Application" as application <<domain>>
+
+
+participant ":InterviewAnswerPlugin" as interviewPlugin <<interface>>
+
+note right AUTHZ
+The AuthorizationService is implemented
+in the eapli framework and will
+be used in this functionality.
+end note
+
+activate CustomerManager
+
+CustomerManager -> UI : wants to execute the process that evaluates (grades) the interviews for a job opening.
+activate UI
+
+UI -> CTRL**: create
+
+UI -> CTRL: getJobOpeningList()
+activate CTRL
+CTRL -> AUTHZ:  ensureAuthenticatedUserHasAnyOf(roles)
+activate AUTHZ
+deactivate AUTHZ
+CTRL ->JobOpeningService: getJobOpeningList()
+    activate JobOpeningService
+        JobOpeningService -> JobOpeningRepository: getJobOpeningList()
+
+        activate JobOpeningRepository
+            JobOpeningRepository -> JobOpeningService: JobOpeningList
+        deactivate JobOpeningRepository
+
+        JobOpeningService-> JobOpeningDTOService: convertToDto(JobOpeningList)
+        activate JobOpeningDTOService
+            JobOpeningDTOService -> JobOpeningService:JobOpeningDtoList
+        deactivate JobOpeningDTOService
+        JobOpeningService -> CTRL: JobOpeningDtoList
+    deactivate JobOpeningService
+    CTRL -> UI: JobOpeningDtoList
+deactivate CTRL
+
+UI--> CustomerManager: Shows the job opening list
+CustomerManager-> UI: Selects a job opening
+
+UI->CTRL: intervirviewsEvaluation(jobOpeningDto)
+activate CTRL
+    CTRL -> AUTHZ:  ensureAuthenticatedUserHasAnyOf(roles)
+    activate AUTHZ
+    deactivate AUTHZ
+
+    CTRL -> ApplicationRepository: applicationsForJobOpeningWithInterviewAnswers(jobReference)
+    activate ApplicationRepository
+        ApplicationRepository --> CTRL: applications
+    deactivate ApplicationRepository
+    CTRL -> InterviewRepository: interviewModelByInterviewName(interviewName)
+    activate InterviewRepository
+        InterviewRepository --> CTRL: InterviewModel
+    deactivate InterviewRepository
+
+    CTRL -> FM: importData(configFileName)
+    activate FM
+        FM --> CTRL: data
+    deactivate FM
+
+    loop for each application
+        CTRL -> interviewPlugin: evaluateInterviewAnswerFiles(interviewAnswer)
+        activate interviewPlugin
+            interviewPlugin --> CTRL: result
+        deactivate interviewPlugin
+
+        CTRL -> application: updateinterviewGrade(grade)
+        activate application
+        deactivate application
+
+        CTRL -> ApplicationRepository: save(application)
+        activate ApplicationRepository
+        deactivate ApplicationRepository
+    end loop
+
+    CTRL--> UI: success
+deactivate CTRL
+UI --> CustomerManager: success
+deactivate UI
+deactivate CustomerManager
+
+@enduml

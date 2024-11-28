@@ -1,0 +1,182 @@
+@startuml US1017_SD
+
+title US1017 Sequence Diagram
+
+actor "Customer Manager" as USER
+|||
+
+participant "<<presentation>>\n:UploadInterviewResponsesUI" as UI
+participant "<<application>>\n:UploadInterviewResponsesController" as CTRL
+participant "<<service>>\n:AuthorizationService" as AUTHZ
+participant "<<service>>\n:JobOpeningManagementService" as JobManagement
+database "<<repository>>\n:JobOpeningRepository" as JobOpeningRepository
+participant "<<domain>>\n:JobOpening" as JobOpening
+participant "<<service>>\n:ApplicationManagementService" as AppManagement
+participant "<<repository>>\n:ApplicationRepositoryRepository" as ApplicationRepository
+participant "<<service>>\n:ApplicationDTOService" as AppDTOServ
+participant "<<domain>>\n:Application" as Application
+participant "<<domain>>\n:InterviewAnswer" as IntAnswer
+participant "<<service>>\n:InterviewModelManagementService" as IntModelMan
+database "<<repository>>\n:InterviewModelRepository" as IntModelRepository
+
+box Plugin #LightBlue
+    participant "Main" as Plugin
+end box
+
+
+activate USER
+
+USER -> UI : asks to upload a text file with the candidates\n responses for an interview
+activate UI
+
+UI -> CTRL : create()
+activate CTRL
+deactivate CTRL
+
+UI -> CTRL: getJobOpenings()
+activate CTRL
+CTRL -> AUTHZ : loggedinUserWithPermissions(BaseRole.CUSTOMER_MANAGER)
+    activate AUTHZ
+    deactivate AUTHZ
+
+    CTRL -> JobManagement: getJobOpeningsInInterviewAndAnalysisPhase(username)
+    activate JobManagement
+
+    JobManagement -> JobOpeningRepository : getJobOpeningsInInterviewAndAnalysisPhase(phase, customerManagerUsername)
+    activate JobOpeningRepository
+    deactivate JobOpeningRepository
+
+JobManagement -> JobOpeningRepository : convertToDTO(jobOpeningList)
+activate JobOpeningRepository
+
+    loop for each JobOpening
+        JobOpeningRepository -> JobOpening : toDTO()
+        activate JobOpening
+        deactivate JobOpening
+    end loop
+deactivate JobOpeningRepository
+
+JobManagement --> CTRL : jobOpeningDTOList
+deactivate JobManagement
+
+CTRL --> UI : jobOpeningDTOList
+deactivate CTRL
+
+
+UI --> USER : asks to select a job opening
+deactivate UI
+
+USER -> UI : selects a job opening
+activate UI
+
+
+UI -> CTRL: getApplications(JobOpeningDTO)
+activate CTRL
+
+CTRL -> JobManagement : getJobOpening(jobOpeningDTO)
+    activate JobManagement
+
+    JobManagement -> JobOpeningRepository : getJobOpening(jobOpeningDTO)
+    activate JobOpeningRepository
+
+    JobOpeningRepository --> JobManagement : jobOpening
+    deactivate JobOpeningRepository
+
+    JobManagement --> CTRL : jobOpening
+    deactivate JobManagement
+
+
+    CTRL -> AppManagement : getApplicationsFromJobReference(jobReference)
+    activate AppManagement
+
+    AppManagement -> ApplicationRepository : getApplicationsFromJobReference(jobReference)
+    activate ApplicationRepository
+    deactivate ApplicationRepository
+
+
+    AppManagement --> AppDTOServ :  convertToDTO(applicationList)
+    activate AppDTOServ
+
+    loop for each application
+    AppDTOServ -> Application : toDTO()
+    activate Application
+    deactivate Application
+    end loop
+
+    deactivate AppDTOServ
+
+    AppManagement --> CTRL : applicationsListDTO
+    deactivate AppManagement
+
+    CTRL --> UI : applicationsListDTO
+        deactivate CTRL
+
+UI --> USER : asks to select a candidate's application
+deactivate UI
+
+USER -> UI : selects a candidate's application
+activate UI
+
+UI --> USER : asks to provide the filepath
+deactivate UI
+
+USER -> UI : gives the filepath
+activate UI
+
+
+UI -> CTRL : uploadFile(applicationDTO, interviewName, filepath)
+activate CTRL
+
+
+CTRL -> IntModelMan : checkAnswersFileIsValid(interviewName, filepath)
+activate IntModelMan
+
+IntModelMan -> IntModelRepository : getFileByName(interviewName)
+activate IntModelRepository
+deactivate IntModelRepository
+
+IntModelMan -> Plugin : checkFileFormat(filepath)
+activate Plugin
+
+Plugin --> IntModelMan : true
+deactivate Plugin
+
+IntModelMan --> CTRL : true
+deactivate IntModelMan
+
+
+
+
+CTRL -> AppManagement : uploadInterviewAnswerFile(applicationDTO, filepath)
+activate AppManagement
+AppManagement -> ApplicationRepository : getApplicationFromDTO(applicationDTO)
+activate ApplicationRepository
+deactivate ApplicationRepository
+
+AppManagement -> Application : updateRequirementAnswer(fileWithAnswers)
+activate Application
+note right
+    Conversion of
+    file content
+     to a in-system
+     File already made
+end note
+
+Application -> IntAnswer** : InterviewAnswer(fileWithAnswers)
+deactivate Application
+
+AppManagement -> ApplicationRepository : save(application)
+activate ApplicationRepository
+deactivate ApplicationRepository
+deactivate AppManagement
+
+
+    CTRL --> UI : shows operation success
+deactivate CTRL
+
+UI --> USER : shows operation success
+deactivate UI
+
+
+
+@enduml

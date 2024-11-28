@@ -1,0 +1,161 @@
+@startuml
+
+title [US1009] - Sequence Diagram
+
+actor "Customer Manager" as USER
+
+participant ":SelectRequirementSpecificationUI" as UI <<presentation>>
+participant ":SelectRequirementSpecificationController" as CTRL <<application>>
+participant ":AuthorizationService" as AUTH <<service>>
+participant ":RequirementSpecification\nManagementService" as RSMS <<service>>
+participant ":RequirementSpecification\nDtoService" as RSMS_DTO <<service>>
+participant ":JobOpening\nManagementService" as JOMS <<service>>
+participant ":JobOpening\nDtoService" as JOMS_DTO <<service>>
+participant ":RequirementSpecification" as RS <<domain>>
+participant ":JobOpening" as JO <<domain>>
+database ":JobOpeningRepository" as JO_REPO <<repository>>
+database ":RequirementsSpecifications\nRepository" as RS_REPO <<repository>>
+
+
+activate USER
+
+USER -> UI: wants to select requirement specification for a job opening
+activate UI
+
+UI -> CTRL**: create
+
+UI -> CTRL: activeJobOpenings()
+activate CTRL
+
+
+CTRL -> AUTH:  ensureAuthenticatedUserHasAnyOf(roles)
+activate AUTH
+deactivate AUTH
+
+CTRL ->JOMS: activeJobOpenings()
+activate JOMS
+
+JOMS -> JO_REPO: findAllJobOpeningsNotStarted()
+activate JO_REPO
+
+JO_REPO --> JOMS: jobOpenings
+deactivate JO_REPO
+
+JOMS -> JOMS_DTO: convertToDto(jobOpenings)
+activate JOMS_DTO
+
+loop for all instances
+
+JOMS_DTO -> JO: toDto()
+activate JO
+
+JO --> JOMS_DTO: jobOpeningDto
+deactivate JO
+end
+
+JOMS_DTO --> JOMS: jobOpeningDtos
+deactivate JOMS_DTO
+
+JOMS --> CTRL: jobOpeningDtos
+deactivate JOMS
+
+CTRL --> UI: jobOpeningDtos
+deactivate CTRL
+
+UI --> USER: shows active job openings
+
+USER -> UI: selects job opening
+
+UI --> USER: shows requirement specification
+
+UI -> CTRL: availableRequirementSpecifications()
+activate CTRL
+
+CTRL -> AUTH:  ensureAuthenticatedUserHasAnyOf(roles)
+activate AUTH
+deactivate AUTH
+
+CTRL ->RSMS: availableRequirementSpecifications()
+activate RSMS
+
+RSMS -> RS_REPO: requirementSpecifications()
+activate RS_REPO
+
+RS_REPO --> RSMS: requirementSpecifications
+deactivate RS_REPO
+
+RSMS -> RSMS_DTO: convertToDto(requirementSpecifications)
+activate RSMS_DTO
+
+loop for all instances
+
+RSMS_DTO -> RS: toDto()
+activate RS
+
+RS --> RSMS_DTO: requirementSpecificationDto
+deactivate RS
+end
+
+RSMS_DTO --> RSMS: requirementSpecificationDtos
+deactivate RSMS_DTO
+
+RSMS --> CTRL: requirementSpecificationsDtos
+deactivate RSMS
+
+CTRL --> UI: requirementSpecificationsDtos
+deactivate CTRL
+
+USER -> UI: selects requirement specification
+
+UI -> CTRL: updateRequirementSpecification(jobOpeningDto, requirementSpecificationDto)
+activate CTRL
+
+
+CTRL -> AUTH:  ensureAuthenticatedUserHasAnyOf(roles)
+activate AUTH
+deactivate AUTH
+
+
+CTRL -> JO_REPO: ofIdentity(jobReference)
+activate JO_REPO
+
+note right JO_REPO
+The JobReference is obtained
+from the Dto instance. This
+method will return the JobOpening
+instance.
+end note
+
+JO_REPO --> CTRL: jobOpening
+deactivate JO_REPO
+
+CTRL -> RS_REPO: ofIdentity(requirementName)
+activate RS_REPO
+
+note right RS_REPO
+The RequirementName is obtained
+from the Dto instance. This
+method will return the
+RequirementSpecification instance.
+end note
+
+RS_REPO --> CTRL: requirementSpecification
+deactivate RS_REPO
+
+CTRL -> JO: changeRequirementSpecification(requirementSpecification)
+activate JO
+deactivate JO
+
+CTRL -> JO_REPO: save(jobOpening)
+activate JO_REPO
+deactivate JO_REPO
+
+
+CTRL --> UI: success
+deactivate CTRL
+
+UI --> USER: displays success
+deactivate UI
+deactivate USER
+
+@enduml

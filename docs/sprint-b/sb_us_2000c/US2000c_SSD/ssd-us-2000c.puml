@@ -1,0 +1,17 @@
+@startuml US1005_SSD
+autonumber
+title US2000c System Sequence Diagram
+
+actor "Operator" as USER
+participant "System" as SYS
+
+activate USER
+
+USER -> SYS : asks to list all the candidates by name
+activate SYS
+SYS --> USER : check if has candidates and shows the list
+deactivate SYS
+
+deactivate USER
+
+@enduml

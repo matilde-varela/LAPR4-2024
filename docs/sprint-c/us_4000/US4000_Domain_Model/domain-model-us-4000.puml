@@ -1,0 +1,63 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+skinparam classAttributeIconSize 0
+hide empty attributes
+skinparam classBackgroundColor beige
+skinparam ArrowColor #222222
+
+
+'AGGREGATES
+
+package "<<aggregate>> Customer Manager" {
+    entity CustomerManager <<entity>> <<root>>  {}
+}
+
+
+package "<<aggregate>> Candidate" {
+entity Candidate <<entity>>  <<root>>{}
+class CandidateName <<(V,#FF8B40) value object>> {}
+class PhoneNumber <<(V,#FF8B40) value object>> {}
+class Email <<(V,#FF8B40) value object>> {}
+
+}
+
+package "<<aggregate>> Application" {
+    entity Application <<entity>><<root>>  {}
+    class ApplicationDate <<(V,#FF8B40) value object>> {}
+    class ApplicationStatus <<(V,#FF8B40) value object>> {}
+    class Interview <<(V,#FF8B40) value object>>   {}
+    class InterviewAnswer <<(V,#FF8B40) value object>>   {}
+    class InterviewResult <<(V,#FF8B40) value object>>   {}
+    class Justification <<(V,#FF8B40) value object>>   {}
+    class InterviewGrade <<(V,#FF8B40) value object>>   {}
+    class RequirementAnswer <<(V,#FF8B40) value object>>   {}
+    class RequirementResult <<(V,#FF8B40) value object>>   {}
+    class InterviewAnswer <<(V,#FF8B40) value object>>   {}
+    class Schedule <<(V,#FF8B40) value object>> {}
+     class File <<(V,#FF8B40) value object>> {}
+}
+
+
+'ASSOCIATIONS
+CustomerManager ---> "0..*" Application : overseas
+CustomerManager --> "1..*" Candidate : manages
+'--
+Candidate --> "1..*" Application : submits
+Candidate ---> "1" Email: identified by
+Candidate --> "1" CandidateName: has
+Candidate ---> "1" PhoneNumber: has
+'__
+Application ---> "0..1" Interview : includes
+Application --> "1" RequirementAnswer : includes
+Application ---> "1" RequirementResult : includes
+Application ---> "1..*" File : describes <
+Application ---> "1" ApplicationDate : registered by
+Application --> "1" ApplicationStatus : categorizes <
+'__
+Interview ---> "1" InterviewAnswer: described in
+Interview ---> "1" InterviewResult: classifies <
+InterviewResult -> "1" InterviewGrade: grades <
+InterviewResult --> "1" Justification: justifies <
+Interview --> "1" Schedule : follows a
+@enduml

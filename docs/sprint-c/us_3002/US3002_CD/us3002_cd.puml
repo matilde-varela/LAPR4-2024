@@ -1,0 +1,154 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+title US3002 Class Diagram
+
+abstract class AbstractListUI {
+# doShow()
+}
+
+interface Serializable {}
+
+interface DTOable {
++ toDTO()
+}
+
+class ListCustomerJobOpeningsUI {
++ doShow()
+}
+
+class ListCustomerJobOpeningsController {
++ getSessionCredentials()
++ getconnection(Username username, String password)
++ jobOpeningsDataList(Username username)
++ closeConnection()
+}
+
+
+class FollowUpConnectionService {
++ getJobOpeningsDataList(Username username)
++ closeConnection()
++ establishConnection(Username username, String password)
+}
+
+
+
+class ClientConnectionThread {
++ receiveJobOpeningsDataList(Username username, int code)
++ closeConnection()
++ create(Socket clientSocket)
++ authenticationProtocol(DataDTO dataDTO)
+}
+
+class DataDTO {
++ addDataBlock(int dataLength, byte[] jobOpeningDTO)
+}
+
+
+class DataBlock {
++ create(int dataLength, byte[] jobOpeningDTO)
+}
+
+class ListingRequestThread {
++ getJobOpeningsList(Username username)
+}
+
+
+class JobOpeningManagementService {
++ getCustomerJobOpeningData(Username username)
+}
+
+
+class JobOpeningListDTOService {
++ convertJobOpeningsToCustomerJobOpeningDTO(List<JobOpening> jobOpeningsList)
+}
+
+class CustomerManagementService {
++ getCustomerByUsername(Username username)
+}
+
+class CustomerRepository {
++ getCustomerByUsername(Username username)
+}
+
+class JobOpeningRepository {
++ findAllJobOpeningsWithCustomerCode(String customerCode)
+}
+
+class AuthorizationService {
+- theSession
+}
+
+class UserSession {
+- authenticatedUser
+}
+
+class MessageDTO {}
+
+class FollowUpServer {}
+
+class AuthenticationService {
++  authenticate(String username, String password,\n Role... BaseRoles.CUSTOMER_MANAGER,\n BaseRoles.CUSTOMER,\n BaseRoles.CANDIDATE)
+}
+
+class JobOpening {
++ toDTO()
+}
+
+class Socket {
++ Socket(InetAddress serverIP, int PORT_NUMBER)
++ close()
+}
+
+class ServerSocket {
++ ServerSocket(int PORT_NUMBER)
++ close()
+}
+
+class JobOpeningDTO {}
+
+' ASSOCIATIONS
+
+AbstractListUI <|-- ListCustomerJobOpeningsUI
+DTOable <|-- JobOpening
+Serializable <|- DataDTO
+
+ListCustomerJobOpeningsUI ..> ListCustomerJobOpeningsController
+
+ListCustomerJobOpeningsController ..> AuthorizationService
+ListCustomerJobOpeningsController ..> FollowUpConnectionService
+ListCustomerJobOpeningsController ..> JobOpeningDTO
+ListCustomerJobOpeningsController ..> UserSession
+
+
+FollowUpConnectionService ..> FollowUpServer
+FollowUpConnectionService ..> ClientConnectionThread
+FollowUpServer --> ClientConnectionThread
+ClientConnectionThread --> ListingRequestThread
+ClientConnectionThread --> AuthenticationService
+ClientConnectionThread --> MessageDTO
+
+FollowUpConnectionService --> Socket
+FollowUpServer --> ServerSocket
+
+JobOpeningManagementService ..> JobOpeningRepository
+JobOpeningRepository .up.> JobOpening
+JobOpening -up-> JobOpeningDTO
+JobOpeningListDTOService -up-> JobOpeningDTO
+JobOpeningRepository --> JobOpeningListDTOService
+
+JobOpeningManagementService ...> CustomerManagementService
+
+CustomerManagementService ..> CustomerRepository
+
+MessageDTO <-- FollowUpConnectionService
+
+AuthorizationService --> UserSession
+
+ListingRequestThread --> DataDTO
+
+DataDTO <-- "1" DataBlock
+
+FollowUpConnectionService .> DataBlock
+
+@enduml

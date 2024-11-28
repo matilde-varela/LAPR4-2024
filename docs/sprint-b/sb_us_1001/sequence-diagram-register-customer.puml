@@ -1,0 +1,98 @@
+@startuml
+autonumber
+
+title [US1001] Register Customer - 1
+
+actor "Customer Manager" as USER
+
+participant ":RegisterCustomerUI" as UI <<presentation>>
+participant ":RegisterCustomerController" as CTRL <<application>>
+participant ":AuthorizationService" as AUTHZ <<service>>
+participant ":CustomerManagementService" as EMS <<service>>
+participant ":GeneratePasswordService" as GPS <<service>>
+participant ":RandomPassword" as PG <<domain>>
+participant ":EventPublisher" as EP <<domain>>
+participant ":UserManagementService" as UMS <<service>>
+participant ":NewCustomerUser\nRegisteredEvent" as EVENT <<domain>>
+
+
+
+
+note right UMS
+The UserManagementService and
+AuthorizationService are implemented
+in the eapli framework and will
+be used in this functionality.
+end note
+
+activate USER
+
+USER -> UI: wants to register new customer
+activate UI
+
+UI -> CTRL**: create
+
+
+
+UI --> USER: asks for necessary information
+
+
+USER -> UI: companyName, address,\ncustomerCode, email
+UI -> CTRL: registerCustomer(companyName, address,\ncustomerCode,email);
+activate CTRL
+
+
+
+CTRL -> AUTHZ:  loggedinUserWithPermissions(roles)
+activate AUTHZ
+
+AUTHZ --> CTRL:  customerManager
+deactivate AUTHZ
+
+CTRL -> EMS: registerNewCustomer(companyName, address, customerCode,\ncustomerManager,email)
+activate EMS
+
+EMS -> GPS: generatePassword()
+activate GPS
+
+GPS -> PG**: create()
+activate PG
+
+PG --> GPS: password
+deactivate PG
+
+GPS --> EMS: password
+deactivate GPS
+
+EMS -> UMS: registerNewUser(email, password,firstname,lastname,  roles)
+            activate UMS
+
+note right of UMS
+The last name will
+be set as "Customer".
+Seeing as this is a
+method from the framework
+we can't change it.
+end note
+
+UMS --> EMS: customerUser
+deactivate UMS
+
+
+
+EMS -> EVENT**: create(companyName, address, customerCode,\ncustomerManager, customerUser)
+
+EMS -> EP : publish(event)
+activate EP
+
+deactivate EP
+
+deactivate EMS
+
+
+deactivate CTRL
+
+
+deactivate USER
+
+@enduml

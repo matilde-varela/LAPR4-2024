@@ -1,0 +1,22 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+CustomerManager -> System : Go back
+
+System -> System : Checks if it can go back
+
+    alt No previous Phase or work on this Phase already happened
+
+        System --> CustomerManager : Failure message
+
+    else Can go back
+
+        System -> System : Changes state of current Phase to "PLANNED"\n and previous Phase to "ON_GOING"
+
+        System --> CustomerManager : Success message
+
+    end
+
+@enduml

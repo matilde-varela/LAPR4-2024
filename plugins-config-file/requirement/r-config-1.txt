@@ -1,0 +1,10 @@
+[SC]-1/Do you prefer using React or Angular for front end development?/React;Angular;/React:1
+[MC]-1/Which of the following are front end languages?/HTML;Python;CSS;/HTML;CSS:1
+[WN]-1/How many years have you been working with JavaScript?/5:1
+[D]-1/When did you start learning web development?/18-05-2024:1/<=
+[WN]-1/How many years have you been working with JavaScript?/5:1/=
+[TF]-1/Are you familiar with responsive web design?/True:1
+[NS]-1/Rate your proficiency in CSS on a scale of one to five./1-2:0/3-5:1
+[DN]-1/What is the pixel width of a standard Bootstrap container?/13.2:1
+[SA]-1/Name a popular CSS preprocessor./Sass:1/LESS:1/Stylus:1
+[T]-1/At what time do you usually start coding?/09:00:1/<=

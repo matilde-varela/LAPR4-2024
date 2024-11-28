@@ -1,0 +1,87 @@
+@startuml US1002_SSD
+
+title US1002 System Sequence Diagram
+
+autonumber
+
+actor "Customer Manager" as CM
+participant "System" as SYS
+
+activate CM
+
+CM -> SYS : asks to register a new job opening
+
+activate SYS
+
+SYS --> CM : asks to select a costumer
+deactivate SYS
+
+CM -> SYS : selects a costumer
+
+activate SYS
+
+SYS --> CM : asks for the title/function
+deactivate SYS
+
+CM -> SYS : provides the title/function
+
+activate SYS
+
+SYS --> CM : asks to choose the contract type
+deactivate SYS
+
+CM -> SYS : selects the contract type
+
+activate SYS
+
+SYS --> CM : asks to choose the work mode
+deactivate SYS
+
+CM -> SYS : selects the work mode
+
+activate SYS
+
+SYS --> CM : asks for the company's address
+deactivate SYS
+
+CM -> SYS : provides the company's address
+
+activate SYS
+
+SYS --> CM : asks for the number of vacancies
+deactivate SYS
+
+CM -> SYS : provides the number of vacancies
+
+activate SYS
+
+SYS --> CM : asks for a description
+deactivate SYS
+
+CM -> SYS : provides a description
+
+activate SYS
+
+SYS --> CM : asks to choose the requirements specifications
+deactivate SYS
+
+CM -> SYS : selects the requirements specifications
+
+activate SYS
+
+SYS --> CM : asks for the confirmation of the job opening's registration
+deactivate SYS
+
+CM -> SYS : confirms registration
+
+activate SYS
+
+SYS --> SYS : generates job opening's\n job reference
+
+SYS --> CM : confirms the successful registration of the job opening
+deactivate SYS
+
+
+deactivate CM
+
+@enduml

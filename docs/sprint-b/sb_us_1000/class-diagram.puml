@@ -1,0 +1,105 @@
+@startuml
+
+
+' Services
+package Framework {
+abstract class AbstractUI {
+    # doShow()
+    # show()
+    # mainLoop()
+}
+abstract class AbstractListUI{
+    # elements()
+    # elementPrinter();
+}
+
+class AuthorizationService {
+    + ensureAuthenticatedUserHasAnyOf(roles)
+}
+
+class UserManagementService {
+    + registerNewUser(email, password, name, email, roles)
+    + deactivatedUsers()
+    + activeUsers()
+    + deactivateUser(user)
+    + activateUser(user)
+}
+
+}
+
+
+class RegisterUserUI {
+- showRoles()
+- buildRoles()
+}
+class ListUsersUI {
+
+}
+class EnableDisableUserUI {
+
+}
+
+
+class AddUserController{
+- addUser(email,name, role, password)
++ getBackofficeRoleTypes()
++ addUser(email,name, role, password)
++ addUser(email,name, role)
+}
+class ListUsersController  {
++ backofficeUsers()
+}
+
+class EnableDisableUserController  {
++ deactivatedUsers()
++ activeUsers()
++ deactivateUser(user)
++ activateUser(user)
+}
+
+class GeneratePasswordService {
++ generatePassword(): RandomPassword
+}
+
+class ListUserService{
++ backofficeUsers() : Iterable<SystemUser>
+- filterBackofficeUsers(users) : Iterable<SystemUser>
+}
+
+class RandomPassword{
+- rawPassword
++ RandomPassword() : RandomPassword
+- RandomPassword(int) : RandomPassword
+}
+
+AbstractUI <|--- RegisterUserUI
+AbstractUI <|-- AbstractListUI
+AbstractListUI <|-- ListUsersUI
+AbstractUI <|- EnableDisableUserUI
+
+
+RegisterUserUI .--> AddUserController
+AddUserController .--> AuthorizationService
+AddUserController .--> UserManagementService
+AddUserController .--> GeneratePasswordService
+GeneratePasswordService .-> RandomPassword
+
+ListUsersUI .-> ListUsersController
+ListUsersController .--> AuthorizationService
+ListUserService .-> UserManagementService
+ListUsersController .-> ListUserService
+
+EnableDisableUserUI .--> EnableDisableUserController
+EnableDisableUserController .--> AuthorizationService
+EnableDisableUserController .--> UserManagementService
+
+
+
+
+
+
+
+
+
+
+@enduml

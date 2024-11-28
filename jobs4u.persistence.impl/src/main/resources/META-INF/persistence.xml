@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.1" xmlns="http://xmlns.jcp.org/xml/ns/persistence">
+    <persistence-unit name="jobs4u.base">
+        <!--
+        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+        -->
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+
+
+        <class>eapli.framework.infrastructure.authz.domain.model.SystemUser</class>
+        <class>eapli.framework.infrastructure.authz.domain.model.Role</class>
+        <class>eapli.framework.infrastructure.authz.domain.model.RoleSet</class>
+        <class>eapli.framework.infrastructure.authz.domain.model.RoleAssignment</class>
+        <class>jobs4u.base.customermanagement.domain.Customer</class>
+        <class>jobs4u.base.customermanagement.domain.CustomerCode</class>
+        <class>jobs4u.base.customermanagement.domain.CompanyName</class>
+        <class>jobs4u.base.jobopeningmanagement.domain.Address</class>
+        <class>jobs4u.base.candidatemanagement.domain.Candidate</class>
+        <class>jobs4u.base.candidatemanagement.domain.PhoneNumber</class>
+        <class>jobs4u.base.rankmanagement.domain.Rank</class>
+        <class>jobs4u.base.rankmanagement.domain.RankOrder</class>
+        <class>jobs4u.base.contracttypemanagement.domain.ContractType</class>
+        <class>jobs4u.base.workmodemanagement.domain.WorkMode</class>
+        <class>jobs4u.base.jobopeningmanagement.domain.JobOpening</class>
+        <class>jobs4u.base.requirementsmanagement.domain.RequirementSpecification</class>
+        <class>jobs4u.base.requirementsmanagement.domain.RequirementName</class>
+        <class>jobs4u.base.requirementsmanagement.domain.RequirementDescription</class>
+        <class>jobs4u.base.pluginmanagement.domain.FullClassName</class>
+        <class>jobs4u.base.interviewmodelmanagement.domain.InterviewModel</class>
+        <class>jobs4u.base.interviewmodelmanagement.domain.InterviewModelDescription</class>
+        <class>jobs4u.base.interviewmodelmanagement.domain.InterviewModelName</class>
+        <class>jobs4u.base.rankmanagement.domain.Rank</class>
+        <class>jobs4u.base.rankmanagement.domain.RankOrder</class>
+        <class>jobs4u.base.criteriamanagement.domain.Criteria</class>
+        <class>jobs4u.base.recruitmentprocessmanagement.domain.Phase</class>
+        <class>jobs4u.base.recruitmentprocessmanagement.domain.PhaseDescription</class>
+        <class>jobs4u.base.recruitmentprocessmanagement.domain.PhasePeriod</class>
+        <class>jobs4u.base.recruitmentprocessmanagement.domain.RecruitmentProcessStatus</class>
+        <class>jobs4u.base.recruitmentprocessmanagement.domain.PhaseType</class>
+        <class>jobs4u.base.recruitmentprocessmanagement.domain.RecruitmentProcess</class>
+        <class>jobs4u.base.recruitmentprocessmanagement.domain.RecruitmentPeriod</class>
+        <class>jobs4u.base.applicationmanagement.domain.Application</class>
+        <class>jobs4u.base.applicationmanagement.domain.ApplicationFile</class>
+        <!--        <class>jobs4u.base.interviewmodelmanagement.domain.InterviewModel</class>-->
+        <class>jobs4u.base.notificationmanagement.domain.Notification</class>
+        <class>jobs4u.base.notificationmanagement.domain.NotificationStatusEnum</class>
+        <class>jobs4u.base.notificationmanagement.domain.NotificationStatus</class>
+        <class>jobs4u.base.notificationmanagement.domain.NotificationTypeEnum</class>
+        <class>jobs4u.base.notificationmanagement.domain.NotificationType</class>
+        <class>jobs4u.base.notificationmanagement.domain.NotificationBody</class>
+        <class>jobs4u.base.notificationmanagement.domain.NotificationRecipient</class>
+        <class>jobs4u.base.notificationmanagement.domain.NotificationDate</class>
+
+        <properties>
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:h2:tcp://vsgate-s2.dei.isep.ipp.pt:10773/jobs4u"/>
+<!--            <property name="jakarta.persistence.jdbc.url" value="jdbc:h2:tcp://vs773.dei.isep.ipp.pt:10773/jobs4u"/>-->
+<!--                              <property name="jakarta.persistence.jdbc.url" value="jdbc:h2:tcp://localhost/~/jobs4u"/>-->
+
+            <property name="jakarta.persistence.jdbc.user" value="admin"/>
+            <property name="jakarta.persistence.jdbc.password" value="2dg2"/>
+<!--                        <property name="jakarta.persistence.jdbc.user" value="sa"/>-->
+<!--            <property name="jakarta.persistence.jdbc.password" value=""/>-->
+
+            <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver"/>
+            <!--            <property name="jakarta.persistence.schema-generation.database.action" value="create"/>-->
+            <!-- <property name="eclipselink.logging.level" value="FINE"/> -->
+            <!-- <property name = "hibernate.show_sql" value = "true" /> -->
+            <!--            <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>-->
+
+        </properties>
+    </persistence-unit>
+</persistence>

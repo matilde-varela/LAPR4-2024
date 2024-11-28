@@ -1,0 +1,95 @@
+@startuml
+
+
+title US2000a Class Diagram
+
+abstract class AbstractUI {
+    # doShow()
+    # show()
+    # mainLoop()
+}
+
+class CandidateUser{
+    +create()
+}
+
+class RegisterCandidateUI {
+}
+
+class RegisterCandidateController{
+    + registerCandidate(name, email, phoneNumber)
+}
+
+class AddEntityNewCandidateUserRegisteredController{
+    + registerNewUser(newCandidateUserRegisteredEvent)
+}
+
+class AuthorizationService {
+    + ensureUserWithPermissions(roles)
+}
+
+class CandidateManagementService {
+    + registerCandidate(name, email, phoneNumber)
+}
+
+class UserManagementService {
+    + registerNewUser(email, password, name)
+}
+
+class CandidateRepository{
+    + save(candidateUser)
+}
+
+class NewCandidateUserRegisteredEvent {
+    + create(user, phoneNumber)
+}
+
+class NewCandidateUserRegisteredEvent{
+
+}
+
+class NewCandidateUserRegisteredWatchDog
+
+interface EventPublisher{
+    + publish(event)
+}
+
+interface EventHandler{
+    + onEvent()
+}
+
+interface DomainEvent{
+    + occurredAt()
+    + registeredAt()
+}
+abstract class DomainEventBase {
+}
+
+
+AbstractUI <|-- RegisterCandidateUI
+
+RegisterCandidateUI .-> RegisterCandidateController
+
+RegisterCandidateController --> AuthorizationService
+RegisterCandidateController --> CandidateManagementService
+
+CandidateManagementService --> UserManagementService
+CandidateManagementService --> NewCandidateUserRegisteredEvent
+CandidateManagementService ..> EventPublisher
+
+EventPublisher --> EventHandler
+
+NewCandidateUserRegisteredWatchDog ..|> EventHandler
+NewCandidateUserRegisteredWatchDog ..> AddEntityNewCandidateUserRegisteredController
+
+AddEntityNewCandidateUserRegisteredController ..> CandidateUser
+AddEntityNewCandidateUserRegisteredController ..> CandidateRepository
+
+NewCandidateUserRegisteredEvent ..|> DomainEvent
+NewCandidateUserRegisteredEvent ..|> DomainEventBase
+
+
+
+
+
+@enduml

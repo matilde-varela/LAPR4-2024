@@ -1,0 +1,46 @@
+@startuml US2004_SSD
+
+title US2004 System Sequence Diagram
+
+autonumber
+
+    actor "Operator" as OP
+participant "System" as SYS
+
+activate OP
+
+OP -> SYS : asks to import candidate's requirement answers
+
+activate SYS
+
+SYS --> OP : asks to select a recruitment process
+deactivate SYS
+
+OP -> SYS : selects a recruitment process
+
+activate SYS
+
+loop for as long as the user wants
+
+SYS --> OP : asks to select a candidate's application
+deactivate SYS
+
+OP -> SYS : selects a candidate's application
+
+activate SYS
+
+SYS --> OP : asks for the filepath
+deactivate SYS
+
+OP -> SYS : gives filepath of file to be imported
+activate SYS
+
+SYS --> OP : confirms the import's success
+
+deactivate SYS
+
+end loop
+
+deactivate OP
+
+@enduml

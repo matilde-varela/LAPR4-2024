@@ -1,0 +1,140 @@
+@startuml
+
+title US1012 Sequence Diagram
+
+actor "Customer Manager" as USER
+|||
+
+'box System
+participant "<<presentation>>\n:GenerateInterviewModelTemplateFileUI" as UI
+participant "<<application>>\n:GenerateInterviewModelTemplateFileController" as CTRL
+participant "<<service>>\n:AuthorizationService" as AuthSvc
+participant "<<service>>\n:CustomerManagementService" as CustomerManagement
+database "<<repository>>\n:CustomerRepository" as CustomerRepository
+participant "<<domain>>\n:Customer" as Customer
+participant "<<service>>\n:JobOpeningManagementService" as JobManagement
+participant "<<service>>\n:JobOpeningListDTOService" as JobOpeningListDTO
+database "<<repository>>\n:JobOpeningRepository" as JobOpeningRepository
+participant "<<domain>>\n:JobOpening" as JobOpening
+participant "<<service>>\n:InterviewTemplateManagerService" as Manager
+database "<<repository>>\n:InterviewModelRepository" as ReqRep
+'end box
+
+box Plugin
+participant "<<Plugin>>\n:InterviewModelPlugin" as Plugin
+participant "<<Parser/Interpreter>>\n:InterviewModelParser" as Parser
+end box
+
+activate USER
+USER -> UI : asks to generate a new interview\n model file
+
+activate UI
+
+    UI --> USER : shows job Openings to select
+deactivate UI
+
+USER -> UI : selects a job Opening
+activate UI
+
+
+UI -> CTRL : create()
+activate CTRL
+deactivate CTRL
+
+UI -> CTRL : getJobOpeningList()
+activate CTRL
+
+    CTRL -> AuthSvc : loggedinUserWithPermissions(BaseRole.CUSTOMER_MANAGER)
+    activate AuthSvc
+    deactivate AuthSvc
+
+    CTRL -> CustomerManagement : getAssignedCustomerCodesList(username)
+    activate CustomerManagement
+
+        CustomerManagement -> CustomerRepository : getCustomersByUsername(username)
+        note right: Username is the Customer\n Manager's email
+        activate CustomerRepository
+        deactivate CustomerRepository
+
+        loop for all codes
+            CustomerManagement -> Customer : customerCode()
+            activate Customer
+            deactivate Customer
+        end loop
+
+    deactivate CustomerManagement
+
+    CTRL -> JobManagement : getJobOpeningsFromCustomerCodes(assignedCustomerCodesList)
+    activate JobManagement
+        loop for each code
+        JobManagement -> JobOpeningRepository : getJobOpeningListMatchingCustomerCode(customerCode)
+        activate JobOpeningRepository
+        deactivate JobOpeningRepository
+        end loop
+    deactivate JobManagement
+
+CTRL -> JobOpeningListDTO : convertToDTO(jobOpeningList)
+activate JobOpeningListDTO
+
+    loop for each JobOpening
+        JobOpeningListDTO -> JobOpening : toDTO()
+        activate JobOpening
+        deactivate JobOpening
+    end loop
+deactivate JobOpeningListDTO
+
+CTRL --> UI : jobOpeningListDTO
+deactivate CTRL
+
+
+UI -> CTRL : exportTemplateFile(jobOpeningDTO)
+
+'get job positions/plugins
+activate CTRL
+
+CTRL -> Manager : getInterviewFromJobOpening(jobOpeningDTO)
+activate Manager
+
+Manager -> ReqRep : interviewModelFromDTO(jobOpeningDTO)
+deactivate Manager
+activate ReqRep
+
+ReqRep -[#lightblue]> ReqRep
+deactivate ReqRep
+
+
+    CTRL -> Manager : generateNewTemplate(interviewModel)
+    activate Manager
+
+        Manager -> Plugin : newInterviewModelTemplate()
+    activate Plugin
+
+        Plugin -> Plugin : generateFile()
+
+        Plugin -> Parser : checkFileSyntax(templateFile)
+        note left: Along with the requirements\n template grammar.
+
+        activate Parser
+        deactivate Parser
+
+        Plugin -> Plugin : export()
+       Plugin --> Manager : confirmation
+    deactivate Plugin
+
+    Manager --> CTRL : confirmation
+    deactivate Manager
+
+    CTRL --> UI : confirmation
+deactivate CTRL
+
+deactivate UI
+
+
+    CTRL --> UI : confirmation
+    deactivate CTRL
+
+UI --> USER : confirms the success of the exportation of the file
+deactivate UI
+
+
+@enduml

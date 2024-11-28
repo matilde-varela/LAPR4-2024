@@ -1,0 +1,168 @@
+@startuml US1010_class_diagram
+'https://plantuml.com/class-diagram
+
+title US1010 Class Diagram
+
+class Phase <<Domain>> {
+- Long phaseId
+- PhaseType phaseType
+- PhaseDescription description
+- PhaseStatus status
+- PhasePeriod period
+- RecruitmentProcess recruitmentprocess
+---
++ setStatusDescriptionAsPLANNED()
++ setStatusDescriptionAsON_GOING()
++ setStatusDescriptionAsCONCLUDED()
+}
+
+class PhaseRepository <<Repository>> {
++ rebuild(Phase: entity)
++ getPhases()
++ save(Phase: entity)
+}
+
+class RecruitmentProcessManagementService <<Service>> {
++ getRecruitmentProcessDTOWithJobReference(JobReference jobReference)
++ getRecruitmentProcessWithJobReference(JobReference jobReference)
++ goBackAPhase(RecruitmentProcess recruitmentProcess)
+}
+
+class RecruitmentProcessDTOService <<Service>> {
++ convertToDTO(RecruitmentProcess recruitmentProcess)
+}
+
+class RecruitmentProcessRepository <<Repository>> {
++ getRecruitmentProcessWithJobReference(JobReference jobReference)
+}
+
+class RecruitmentProcess <<Domain>> {
+- RecruitmentPeriod recruitmentPeriod
+- List<Phase> phases
+- JobOpening jobOpening
+}
+
+interface AbstractListUI{
+# elements()
+# elementPrinter()
+# emptyMessage()
+# listHeader()
+# elementName(
+# doShow()
+}
+
+class CustomerManagementService <<Service>> {
++ getAssignedCostumerCodesList(EmailAddress username)
+}
+
+class Customer <<Domain>> <<Aggregate Root>> {
+- CustomerCode customerCode
+- CompanyName companyName
+- EmailAddress costumerManagerEmail
++ customerCode()
++ companyName()
+}
+
+class JobOpeningManagementService <<Service>> {
++ getJobOpeningsFromCostumerCodes(List<CustomerCode> assignedCostumerCodesList)
++ filterJobOpeningList(List<Criteria> criteriaList)
+}
+
+class JobOpeningListDTOService <<Service>> {
++ convertToDTO(List<JobOpening> jobOpeningList)
+}
+
+class ChangePhaseStatesUI <<Presentation>> {
++ elements()
++ elementPrinter()
++ emptyMessage()
++ listHeader()
++ elementName(
++ doShow()
+}
+
+class ChangePhaseStatesController <<Application>> {
++ getAllJobOpenings()
++ getRecruitmentProcessDTOWithJobReference(JobReference jobReference)
++ getRecruitmentProcessWithJobReference(JobReference jobReference)
++ hasRequirementSpecification(JobReference jobReference)
++ hasInterviewModel(JobReference jobReference)
++ startAPhase(JobReference jobReference)
++ goBackAPhase(Long phaseIdOfCurrentPhase, Long phaseIdOfPreviousPhase)
+}
+
+class AuthorizationService <<Service>> {
++ loggedinUserWithPermissions(Role ... Action BaseRole.CUSTOMER_MANAGER)
+}
+
+class JobOpening <<Domain>> <<Aggregate Root>> {
+- JobFunction function
+- ContractType contractType
+- WorkMode workMode
+- Address jobOpeningAddress
+- JobReference jobReference
+- NumberVacancy numVacancies
+- JobDescription description
+- RequirementSpecification requirementsSpecification
+- Set<Application> applications
+- Rank rank
+--
++ getApplications()
++ hasRequirementSpecification()
++ hasInterviewModel()
+}
+
+class JobOpeningRepository <<Persistence>> <<Repository>> {
++ rebuild(JobOpening: entity)
++ getJobOpeningListMatchingCostumerCode(String costumerCode)
+}
+
+class CustomerRepository  <<Persistence>> <<Repository>>  {
++ save(e: Customer)
++ getCostumersByUsername(EmailAddress username)
+}
+
+interface RepositoryDatabase <<Persistence>> {
++ save(Customer: Customer)
+}
+
+
+'Associations
+'Basic Flow
+ChangePhaseStatesUI ..> ChangePhaseStatesController
+ChangePhaseStatesController ..> CustomerManagementService
+ChangePhaseStatesController ..> JobOpeningManagementService
+ChangePhaseStatesController ..> JobOpeningListDTOService
+ChangePhaseStatesController ..> RecruitmentProcessManagementService
+ChangePhaseStatesController ..> RecruitmentProcess
+ChangePhaseStatesController ..> Phase
+
+'Domain Layer
+CustomerManagementService -down-> CustomerRepository
+CustomerManagementService --> Customer
+JobOpeningManagementService --> JobOpeningRepository
+JobOpeningManagementService --> JobOpening
+JobOpeningListDTOService --> JobOpening
+RecruitmentProcessManagementService --> RecruitmentProcessDTOService
+RecruitmentProcessManagementService ..> RecruitmentProcessRepository
+RecruitmentProcessManagementService ..> PhaseRepository
+RecruitmentProcessManagementService ..> RecruitmentProcess
+RecruitmentProcessManagementService ..> Phase
+
+'Persistence Layer
+JobOpeningRepository --> JobOpening
+PhaseRepository --> Phase
+RecruitmentProcessRepository --> RecruitmentProcess
+
+'Interface implementation
+RepositoryDatabase <|.. JobOpeningRepository : implements
+RepositoryDatabase <|.. CustomerRepository : implements
+
+AbstractListUI <|.. ChangePhaseStatesUI : implements
+
+'Authentication
+AuthorizationService .right.> ChangePhaseStatesController
+
+
+
+@enduml

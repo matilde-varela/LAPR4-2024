@@ -1,0 +1,76 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+skinparam sequenceMessageAlign center
+
+CustomerManager -> System: Asks to setup the phases of a job opening
+
+loop
+
+    System --> CustomerManager: Shows list of job openings that need setup and asks for a valid job reference to identify the job opening
+
+
+    alt Invalid job reference
+
+        loop
+
+        CustomerManager -> System: Inputs an invalid job reference
+
+        System --> System: Searches for a job opening with that job reference
+
+        System --> CustomerManager: Notifies the user it's invalid and asks to try again
+
+        end
+
+    else Valid job reference
+
+        CustomerManager -> System: Inputs a valid job reference
+
+        System --> System: Searches for a job opening with that job reference
+
+        System --> CustomerManager: Asks if the interview will be part of the process
+
+        alt If the answer is yes
+
+            CustomerManager -> System: Answers yes
+
+            loop for each of the 5 phases to be setup (Applications | Screening | Interviews | Analysis | Result)
+
+                System --> CustomerManager: Asks for the initial date and final date for the phase
+
+                CustomerManager -> System: gives requested data
+
+            end
+
+        else If the answer is no
+
+            CustomerManager -> System: Answers no
+
+            loop for each of the 4 phases to be setup (Applications | Screening | Analysis | Result)
+
+                System --> CustomerManager: Asks for the initial date and final date for the phase
+
+                CustomerManager -> System: gives requested data
+
+            end
+
+        end
+
+    end
+
+    System --> CustomerManager: Asks the user if it wants to setup the phases for another job opening
+
+    alt User wants to search again
+
+        CustomerManager -> System: Accepts
+
+    end
+
+end
+
+    CustomerManager -> System: Denies
+
+    System --> CustomerManager: Sends user back to the main menu
+
+@enduml

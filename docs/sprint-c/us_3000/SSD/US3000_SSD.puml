@@ -1,0 +1,27 @@
+@startuml US3000_SSD
+
+title US3000 System Sequence Diagram
+
+autonumber
+
+actor "Candidate" as USER
+participant "System\n(Candidate App)" as SYS
+participant "Follow Up Server" as SERVER
+
+activate USER
+
+USER -> SYS : asks to list all its applications and their states
+activate SYS
+
+SYS -> SERVER : establishes TCP connection
+activate SERVER
+SYS -> SERVER : requests all applications from the\n candidate, including their state
+
+SERVER --> SYS : application list
+deactivate SERVER
+
+SYS --> USER : shows application list
+deactivate SYS
+
+
+@enduml

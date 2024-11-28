@@ -1,0 +1,101 @@
+@startuml US1019_CD
+title US1019 Class Diagram
+
+'package "Presentation" {
+    class ListOrderedCandidatesUI <<Presentation>> {
+    }
+'}
+
+'package "Application" {
+    class ListOrderedCandidatesController <<Application>> {
+        + getJobOpeningList()
+        + getApplicationsOrderedByInterviewResult(jobOpeningDTO)
+    }
+'}
+
+class JobOpeningManagementService <<Service>> {
+    + getJobOpeningListInAnalysisPhase(username)
+    + getJobOpening(jobOpeningDTO)
+}
+
+class JobOpeningDTOService <<Service>> {
+    + convertToDTO(jobOpeningList)
+}
+
+class ApplicationManagementService <<Service>> {
+    + getApplicationsWithInterviewGrade(jobOpening)
+    + getApplicationsOrderedByInterviewResult(applicationListDTO)
+}
+
+class ApplicationDTOService <<Service>> {
+    + convertToDTO(applicationList)
+}
+
+    class AuthenticationService <<Application>> <<Service>> {
+        + loggedinUserWithPermissions(BaseRole.CUSTOMER_MANAGER)
+
+    }
+
+    class CustomerManager <<Domain>> <<Aggregate Root>> {
+        + customerCode()
+    }
+
+    class Candidate <<Domain>> <<Aggregate Root>> {
+        + toDTO()
+    }
+
+    class JobOpening <<Domain>> <<Aggregate Root>> {
+        + toDTO()
+    }
+
+    class Application <<Domain>> <<Aggregate Root>> {
+        + toDTO()
+    }
+
+    class Interview <<Domain>> <<Value Object>> {
+        + valueOf()
+    }
+'}
+
+'package "Persistence" {
+    class JobOpeningRepository <<Persistence>> <<Repository>> {
+        + getJobOpeningListInAnalysisPhase(customerCode)
+        + getJobOpening(JobOpeningDTO)
+    }
+
+    class ApplicationRepository <<Persistence>> <<Repository>> {
+        + getApplicationsWithInterviewGrade()
+    }
+
+'}
+
+' Associations
+CustomerManager ..> ListOrderedCandidatesController
+ListOrderedCandidatesUI ..> ListOrderedCandidatesController
+ListOrderedCandidatesController ..> JobOpeningRepository
+ListOrderedCandidatesController ..> ApplicationRepository
+ListOrderedCandidatesController ..> ApplicationManagementService
+ListOrderedCandidatesController ..> JobOpeningManagementService
+ListOrderedCandidatesController ..> JobOpeningDTOService
+ListOrderedCandidatesController ..> ApplicationDTOService
+
+' Domain Layer
+Interview "0..1" --> "*" Application : characterizes
+JobOpeningManagementService --> JobOpeningRepository
+JobOpeningManagementService --> JobOpening
+ApplicationManagementService -> Application
+ApplicationManagementService -> ApplicationRepository
+ApplicationDTOService -> Application
+JobOpeningDTOService --> JobOpening
+
+' Persistence Layer
+JobOpeningRepository <.. JobOpening : persisted by
+
+ApplicationRepository <.. Application : persisted by
+ApplicationRepository "1" --> "*" Interview : rebuilds
+
+
+' Authentication
+AuthenticationService ..> ListOrderedCandidatesController
+
+@enduml

@@ -1,0 +1,113 @@
+@startuml
+autonumber
+
+
+actor "Admin" as AD
+
+participant ":EnableDisableUserUI" as UI <<presentation>>
+participant ":EnableDisableController" as CTRL <<application>>
+participant ":UserManagementService" as UMS <<service>>
+participant ":AuthorizationService" as AUTHZ <<service>>
+
+note right AUTHZ
+The UserManagementService and
+AuthorizationService are implemented
+in the eapli framework and will
+be used in this functionality.
+end note
+
+
+activate AD
+
+AD -> UI : wants to disable/enable user
+activate UI
+
+UI -> CTRL**: create
+
+UI --> AD: asks whether it wants to enable or disable
+
+AD -> UI : chooses
+
+alt enable
+
+UI ->   CTRL: deactivatedUsers()
+activate CTRL
+
+CTRL -> AUTHZ:  ensureAuthenticatedUserHasAnyOf(roles)
+activate AUTHZ
+deactivate AUTHZ
+
+
+CTRL -> UMS: deactivatedUsers()
+activate UMS
+
+UMS --> CTRL: users
+deactivate UMS
+
+CTRL --> UI: users
+deactivate CTRL
+
+UI --> AD: shows users
+AD -> UI: selects user to enable
+
+UI -> CTRL: activateUser(user)
+activate CTRL
+
+CTRL -> AUTHZ:  ensureAuthenticatedUserHasAnyOf(roles)
+activate AUTHZ
+deactivate AUTHZ
+
+CTRL -> UMS : activateUser(user)
+activate UMS
+
+UMS --> CTRL : user
+deactivate UMS
+
+CTRL --> UI : user
+deactivate CTRL
+
+else disable
+
+UI ->   CTRL: activeUsers()
+activate CTRL
+
+CTRL -> AUTHZ:  ensureAuthenticatedUserHasAnyOf(roles)
+activate AUTHZ
+deactivate AUTHZ
+
+CTRL -> UMS: activeUsers()
+activate UMS
+
+UMS --> CTRL: users
+deactivate UMS
+
+CTRL --> UI: users
+deactivate CTRL
+
+UI --> AD: shows users
+AD -> UI: selects user to disable
+
+UI -> CTRL: deactivateUser(user)
+activate CTRL
+
+CTRL -> AUTHZ:  ensureAuthenticatedUserHasAnyOf(roles)
+activate AUTHZ
+deactivate AUTHZ
+
+CTRL -> UMS : deactivateUser(user)
+activate UMS
+
+UMS --> CTRL : user
+deactivate UMS
+
+CTRL --> UI : user
+deactivate CTRL
+
+
+end
+
+UI --> AD: success
+
+deactivate AD
+
+@enduml

@@ -1,0 +1,116 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+skinparam groupInheritance 3
+
+Class "<<Presentation>>\nRegisterPluginUI" as UI {
+    ..
+    + doShow()
+}
+Class "<<Application>>\nRegisterPluginController" as CTRL {
+    ..
+    + registerInterviewPlugin(String: nameInterview, String: description, String: path)
+}
+Class "<<Infrastructure>>\nInterviewModelManagementService" as SERVICEIM {
+    ..
+    + registerInterviewPlugin(String: nameInterview, String: description, String: path)
+    + create()
+}
+Class "<<Domain>>\n<<Root Entity>>\nInterviewModel" as IM {
+    - InterviewModelName: name
+    - InterviewModelDescription: description
+    - PluginJarFile: jarFile
+    ..
+    + valueOfInterviewModelName()
+    + valueOfInterviewModelDescription()
+    + valueOfPluginJarFile()
+    + toString()
+}
+Class "<<Domain>>\n<<Value Object>>\nInterviewModelName" as IMNAME {
+    - String: name
+    + valueOf(String: name)
+}
+Class "<<Domain>>\n<<Value Object>>\nInterviewModelDescription" as IMDESC {
+    - String: description
+    + valueOf(String: description)
+}
+Class "<<Domain>>\n<<Value Object>>\nPluginJarFile" as PLUGIN {
+    - String: filePath
+    + valueOf(String: filePath)
+}
+Class "<<Infrastructure>>\nInterviewModelRepository" as IMREPO {
+    ..
+    + findAll()
+    + findAllById(Iterable<InterviewModelName>: name)
+    + findById(InterviewModelName: name)
+    + save(InterviewModel: interviewModel)
+}
+Interface "<<Presentation>>\nAbstractUI" as ABUI {
+    ..
+    - doShow()
+}
+Interface "<<Persistentence>>\nDomainRepository" as DREPO {
+    ..
+    - findAll()
+    - findAllById(Iterable<Id>: id)
+    - findById(Id: id)
+    - save(Entity: Entity)
+}
+Class "<<Infrastructure>>\nRequirementSpecificationManagementService" as SERVICERS {
+    ..
+    + registerRequirementPlugin(String: nameRequirement, String: description, String: path)
+    + create()
+}
+Class "<<Domain>>\n<<Root Entity>>\nRequirementSpecification" as RS {
+    - RequirementName: name
+    - RequirementDescription: description
+    - PluginJarFile: jarFile
+    ..
+    + valueOfRequirementName()
+    + valueOfRequirementDescription()
+    + valueOfPluginJarFile()
+    + toString()
+}
+Class "<<Domain>>\n<<Value Object>>\nRequirementName" as RSNAME {
+    - String: name
+    + valueOf(String: name)
+}
+Class "<<Domain>>\n<<Value Object>>\nRequirementDescription" as RSDESC {
+    - String: description
+    + valueOf(String: description)
+}
+Class "<<Infrastructure>>\nRequirementSpecificationRepository" as RSREPO {
+    ..
+    + findAll()
+    + findAllById(Iterable<RequirementName>: name)
+    + findById(RequirementName: name)
+    + save(RequirementSpecification: requirementSpecification)
+}
+
+UI ..> CTRL
+UI -|> ABUI: implements
+
+CTRL ..> SERVICEIM
+CTRL ..> SERVICERS
+
+SERVICERS ..> RS
+SERVICERS ..> RSREPO
+
+SERVICEIM ..> IM
+SERVICEIM ..> IMREPO
+
+IM o-- IMNAME
+IM o-- IMDESC
+IM o-- PLUGIN
+
+RS o-- RSNAME
+RS o-- RSDESC
+RS o-- PLUGIN
+
+RSREPO ..> RS
+RSREPO --|> DREPO: implements
+
+IMREPO ..> IM
+IMREPO --|> DREPO: implements
+
+@enduml

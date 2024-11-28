@@ -1,0 +1,65 @@
+@startuml
+
+
+' Services
+
+abstract class AbstractUI {
+    # doShow()
+    # show()
+    # mainLoop()
+}
+abstract class AbstractListUI{
+    # elements()
+    # elementPrinter();
+}
+
+class AuthorizationService {
+    + ensureAuthenticatedUserHasAnyOf(roles)
+}
+
+class CandidateManagementService {
+    + deactivatedUsers()
+    + activeUsers()
+    + deactivateUser(candidate)
+    + activateUser(candidate)
+}
+class UserManagementService {
+    + deactivateUser(user)
+    + activateUser(user)
+}
+class CandidateDtoService {
+    + convertToDto()
+}
+class SystemUserRepository {
+    + save()
+}
+
+class EnableDisableCandidateUI {
+
+}
+
+class EnableDisableCandidateController  {
++ deactivatedUsers()
++ activeUsers()
++ deactivateUser(user)
++ activateUser(user)
+}
+
+Interface DomainRepository{
+    + save()
+}
+
+AbstractUI <|-- AbstractListUI
+AbstractUI <|- EnableDisableCandidateUI
+
+
+EnableDisableCandidateUI .--> EnableDisableCandidateController
+EnableDisableCandidateController .--> AuthorizationService
+EnableDisableCandidateController .--> CandidateManagementService
+
+CandidateManagementService --> UserManagementService
+CandidateManagementService --> CandidateDtoService
+UserManagementService --> SystemUserRepository
+
+SystemUserRepository .-> DomainRepository
+@enduml

@@ -1,0 +1,25 @@
+@startuml US1002_Job_Opening_State_Diagram
+'https://plantuml.com/state-diagram
+
+title US1002 Job Opening State Diagram
+
+scale 350 width
+
+state UNFINISHED {
+}
+
+state NOT_STARTED {
+}
+
+state STARTED {
+}
+
+state ENDED {
+}
+
+[*] --> UNFINISHED : Job opening without\n a recruitment process
+UNFINISHED --> NOT_STARTED : Job opening that has a\n recruitment process\n (not started)
+NOT_STARTED --> STARTED : Job opening whose\n recruitment process\n has started
+STARTED --> ENDED : Job opening whose\n recruitment process\n has ended
+
+@enduml

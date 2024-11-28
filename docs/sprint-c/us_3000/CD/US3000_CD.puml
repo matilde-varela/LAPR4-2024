@@ -1,0 +1,135 @@
+@startuml US3000_CD
+title US3000 Class Diagram
+
+'package "Presentation" {
+    class ListApplicationsAndStateUI <<Presentation>> {
+    }
+'}
+
+'package "Application" {
+    class ListApplicationsAndStateController <<Application>> {
+        + getApplicationList(username)
+        + getSessionCredentials()
+        + getconnection(username, password, PORT_NUMBER)
+        + jobOpeningsDataList(username)
+        + closeConnection(PORT_NUMBER)
+    }
+'}
+
+class FollowUpConnectionService <<Service>> {
++ getApplicationsList(username)
++ closeConnection(PORT_NUMBER)
++ establishConnection(username, password, serverIP, PORT_NUMBER)
+}
+
+
+class ClientConnectionThread {
++ getApplicationsList(username, code)
++ closeConnection(code)
++ create(clientSocket)
++ authenticationProtocol(dataDTO)
+}
+
+class ListingRequestThread {
++ getApplicationsList(code, username)
+}
+
+class DataDTO {
++ addDataBlock(DATA_LEN_L, DATA_LEN_M, applicationDTO.key())
++ addDataBlock(DATA_LEN_L, DATA_LEN_M, applicationDTO.value())
+}
+
+
+class DataBlock {
++ create(DATA_LEN_L, DATA_LEN_M, applicationDTO.key())
++ create(DATA_LEN_L, DATA_LEN_M, applicationDTO.value())
+}
+
+class JobOpeningManagementService <<Service>> {
++ getJobOpeningList()
+
+}
+
+class ApplicationManagementService <<Service>> {
+    + getApplicationsAndNumber(username)
+    + applicationDTOMap.put(applicationDTO, jobOpeningApplicationNumber)
+}
+
+class ApplicationDTOService <<Service>> {
+    + convertToDTO(application)
+}
+
+    class JobOpening <<Domain>> <<Aggregate Root>> {
+        + toDTO()
+    }
+
+    class Application <<Domain>> <<Aggregate Root>> {
+        + toDTO()
+    }
+'}
+
+'package "Persistence" {
+    class JobOpeningRepository <<Persistence>> <<Repository>> {
+        + getJobOpeningListMatchingCustomerManager(customerManagerUsername)
+        + getJobOpening(JobOpeningDTO)
+    }
+
+    class ApplicationRepository <<Persistence>> <<Repository>> {
+        + getApplicationFromCandidateUserName(username)
+    }
+
+'}
+
+class FollowUpServer {}
+
+class Socket {
++ Socket(serverIP, PORT_NUMBER)
++ close()
+}
+
+class ServerSocket {
++ ServerSocket(PORT_NUMBER)
++ close()
+}
+
+
+
+' Associations
+ListApplicationsAndStateUI .> ListApplicationsAndStateController
+ListApplicationsAndStateController ..> ApplicationManagementService
+ListApplicationsAndStateController ..> JobOpeningManagementService
+ListApplicationsAndStateController ..> ApplicationDTOService
+
+' Domain Layer
+JobOpeningManagementService -left-> JobOpeningRepository
+JobOpeningManagementService -up-> JobOpening
+ApplicationManagementService --> Application
+ApplicationManagementService -left-> ApplicationRepository
+ApplicationDTOService -up-> Application
+JobOpeningDTOService -up-> JobOpening
+
+' Persistence Layer
+JobOpeningRepository <.. JobOpening : persisted by
+
+ApplicationRepository <.. Application : persisted by
+
+' Authentication
+AuthenticationService ..> ListApplicationsAndStateController
+FollowUpConnectionService ..> ListApplicationsAndStateController
+
+FollowUpConnectionService ..> FollowUpServer
+FollowUpConnectionService ..> ClientConnectionThread
+FollowUpServer --> ClientConnectionThread
+ClientConnectionThread -> ListingRequestThread
+ClientConnectionThread --> AuthenticationService
+
+FollowUpConnectionService -up-> Socket
+FollowUpServer -up-> ServerSocket
+
+ListingRequestThread --> DataDTO
+
+DataDTO <-- "1" DataBlock
+
+FollowUpConnectionService .> DataBlock
+
+@enduml

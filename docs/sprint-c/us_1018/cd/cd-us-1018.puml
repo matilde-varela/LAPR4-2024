@@ -1,0 +1,100 @@
+@startuml
+
+
+' Services
+
+abstract class AbstractUI {
+    # doShow()
+    # show()
+    # mainLoop()
+}
+abstract class AbstractListUI{
+    # elements()
+    # elementPrinter();
+}
+interface DomainRepository {
++ ofIdentity()
++ save()
+}
+class EvaluateInterviewsUI {
+    + doShow()
+}
+class EvaluateInterviewsController  {
+    + getJobOpeningList()
+    + interviewsEvaluation(jobOpeningDto)
+}
+
+class JobOpeningManagementService {
+    + getJobOpeningList()
+}
+class JobOpeningDtoService {
+    + convertToDto()
+}
+class JobOpening{
+    +toDto()
+}
+
+class JobOpeningRepository{
+    +getJobOpeningList()
+}
+interface ApplicationRepository {
+    + applicationsForJobOpeningWithInterviewAnswers(jobReference) : Iterable<Application>
+    + save(application)
+}
+
+class Application {
++ updateInterviewGrade(grade)
+}
+
+interface InterviewAnswerPlugin {
++ evaluateInterviewAnswerFile(file) : Integer
+}
+
+
+class AuthorizationService {
+    + ensureAuthenticatedUserHasAnyOf(roles)
+}
+
+class InterviewAnswer <<(V,#FF8B40) value object>> {
+- file : String
+}
+
+class InterviewGrade <<(V,#FF8B40) value object>> {
+- grade : Integer
+}
+
+
+
+
+
+
+AbstractUI <|-- AbstractListUI
+AbstractUI <|- EvaluateInterviewsUI
+
+
+EvaluateInterviewsUI .--> EvaluateInterviewsController
+
+EvaluateInterviewsController --> AuthorizationService
+EvaluateInterviewsController --> JobOpeningManagementService
+EvaluateInterviewsController --> ApplicationRepository
+EvaluateInterviewsController -->JobOpeningRepository
+EvaluateInterviewsController --> InterviewAnswerPlugin
+
+
+JobOpeningManagementService --> JobOpeningDtoService
+JobOpeningManagementService ..> JobOpening
+JobOpeningManagementService --> JobOpeningRepository
+
+JobOpeningDtoService ..> JobOpening
+
+JobOpeningRepository ..> DomainRepository
+
+ApplicationRepository ..> DomainRepository
+ApplicationRepository ..> Application
+
+Application --> InterviewAnswer
+Application --> InterviewGrade
+
+
+
+@enduml

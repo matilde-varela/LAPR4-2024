@@ -1,0 +1,70 @@
+@startuml US1013_SSD
+
+title US1013 System Sequence Diagram
+
+autonumber
+
+actor "Customer Manager" as CM
+participant "System" as SYS
+
+activate CM
+
+CM -> SYS : asks to rank candidates
+
+activate SYS
+
+SYS --> CM : asks to select a job opening
+deactivate SYS
+
+CM -> SYS : selects a job opening
+
+activate SYS
+
+SYS --> CM : asks if it wants to check the interview scores
+deactivate SYS
+
+group opt
+
+CM -> SYS : confirms
+activate SYS
+
+SYS -> SYS : opens new application instance
+SYS --> CM : shows interview scores
+
+loop for all candidates
+
+SYS --> CM : asks to select a candidate
+deactivate SYS
+
+CM -> SYS : selects a candidate
+
+activate SYS
+
+SYS --> CM : asks if it wants to see candidate's application files
+deactivate SYS
+
+group opt
+
+CM -> SYS : selects the file
+
+activate SYS
+
+SYS -> SYS : opens new application instance
+
+SYS --> CM : shows content of selected file
+deactivate SYS
+
+end opt
+
+CM -> SYS : determinates the candidate's ranking
+
+activate SYS
+
+SYS --> CM : confirms new successful rank entry
+deactivate SYS
+
+end loop
+
+deactivate CM
+
+@enduml

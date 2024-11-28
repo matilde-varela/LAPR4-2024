@@ -1,0 +1,127 @@
+@startuml US1021_CD
+title US1021 Class Diagram
+
+'package "Presentation" {
+    class DisplayAllApplicationDataUI <<Presentation>> {
+    }
+'}
+
+'package "Application" {
+    class DisplayAllApplicationDataController <<Application>> {
+        + getApplicationList()
+        + getJobOpeningList()
+    }
+'}
+
+class JobOpeningManagementService <<Service>> {
+    + jobOpeningsOfCustomerManager(username)
+    + getApplicationList(jobOpeningDTOList)
+    + add(applicationListDTO)
+}
+
+class JobOpeningDTOService <<Service>> {
+    + convertToDTO(jobOpeningList)
+}
+
+class ApplicationManagementService <<Service>> {
+    + getApplicationsList(jobOpening)
+}
+
+class ApplicationDTOService <<Service>> {
+    + convertToDTO(applicationList)
+}
+
+
+    class AuthenticationService <<Application>> <<Service>> {
+        + loggedinUserWithPermissions(BaseRole.CUSTOMER_MANAGER)
+    }
+
+    class CustomerManager <<Domain>> <<Aggregate Root>> {
+        + customerCode()
+    }
+
+    class JobOpening <<Domain>> <<Aggregate Root>> {
+        - function : String
+        - contractType : ContractType
+        - workMode : WorkMode
+        - companyAddress : Address
+        - costumerCode : String
+        - companyName : String
+        - numVacancies : Integer
+        - description : String
+        - requirementsSpecificationsFile : File
+        + toDTO()
+    }
+
+    class Application <<Domain>> <<Aggregate Root>> {
+        - requirementAnswer : String
+        - requirementResult : Integer
+        - file : File
+        - email : String
+        - applicationDate : Date
+        - applicationStatus : Boolean
+        - candidateName : String
+        - phoneNumber : Integer
+        - interview : Interview
+        + toDTO()
+    }
+
+    class Interview <<Domain>> <<Value Object>> {
+        - interviewTypeDenomination : String
+        - schedule : Date
+        - interviewResult : String
+        - interviewGrade : Integer
+        - justification : String
+        - interviewAnswer :  String
+        + valueOf()
+    }
+'}
+
+'package "Persistence" {
+    class JobOpeningRepository <<Persistence>> <<Repository>> {
+        + getJobOpeningListMatchingCustomerManager(customerManagerUsername)
+        + getJobOpening(JobOpeningDTO)
+    }
+
+    class ApplicationRepository <<Persistence>> <<Repository>> {
+        + getApplicationsListWithInterviewResult()
+    }
+
+'}
+
+' Associations
+CustomerManager ..> DisplayAllApplicationDataController
+DisplayAllApplicationDataUI ..> DisplayAllApplicationDataController
+DisplayAllApplicationDataController ..> JobOpeningRepository
+DisplayAllApplicationDataController ..> ApplicationRepository
+DisplayAllApplicationDataController ..> ApplicationManagementService
+DisplayAllApplicationDataController ..> JobOpeningManagementService
+DisplayAllApplicationDataController ...> JobOpeningDTOService
+DisplayAllApplicationDataController ..> ApplicationDTOService
+
+' Domain Layer
+Interview "0..1" --> "*" Application : characterizes
+JobOpeningManagementService --> JobOpeningRepository
+JobOpeningManagementService --> JobOpening
+ApplicationManagementService --> Application
+ApplicationManagementService --> ApplicationRepository
+ApplicationDTOService --> Application
+JobOpeningDTOService --> JobOpening
+
+' Persistence Layer
+JobOpeningRepository <.. JobOpening : persisted by
+
+ApplicationRepository <.. Application : persisted by
+ApplicationRepository "1" --> "*" Interview : rebuilds
+
+
+' Interface implementation
+RepositoryDatabase <|.. JobOpeningRepository : implements
+RepositoryDatabase <|.. ApplicationRepository : implements
+RepositoryDatabase <|.. CustomerRepository : implements
+
+' Authentication
+AuthenticationService ..> DisplayAllApplicationDataController
+
+
+@enduml

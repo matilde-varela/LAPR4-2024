@@ -1,0 +1,176 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+skinparam groupInheritance 3
+
+Class "<<Domain>>\n<<Root Entity>>\nJobOpening" as J {
+    - JobReference: jobRef
+    ..
+    + jobRefValue()
+    + toString()
+}
+
+Class "<<Domain>>\n<<Root Entity>>\nRecruitmentProcess" as R {
+    - RecruitmentPeriod: lengthOfTime
+    - List<Phase>: phasesOfRecruitmentProcess
+    ..
+    + RecruitmentPeriod(RecruitmentPeriod: lengthOfTime, List<Phase>: phasesOfRecruitmentProcess)
+    + toString()
+}
+
+Class "<<Domain>>\n<<Entity>>\nPhase" as P {
+    - PhaseDescription: description
+    - PhaseType: type
+    - PhaseStatus: status
+    - PhasePeriod: period
+    ..
+    + Phase(String: description, String: type, String: status, LocalDate start, LocalDate finish)
+    + PhaseDescription(String: text)
+    + PhaseType(String: text)
+    + PhaseStatus(String: status)
+    + PhasePeriod(LocalDate start, LocalDate finish)
+    + toString()
+}
+
+Class "<<Domain>>\n<<DTO>>\nPhaseDTO" as PDTO {
+    - String: description
+    - String: type
+    - String: status
+    - LocalDate: startDate
+    - LocalDate: endDate
+    ..
+    + valueOfDescription()
+    + valueOfType()
+    + valueOfStatus()
+    + valueOfStartDate()
+    + valueOfEndDate()
+}
+
+
+Class "<<Domain>>\n<<Value Object>>\nJobReference" as JREF {
+    - Integer: reference
+    ..
+    + valueOfReference()
+    + toString()
+}
+Class "<<Domain>>\n<<Value Object>>\nRecruitmentPeriod" as RPERIOD {
+    - LocalDate: start
+    - LocalDate: finish
+    ..
+    + startDate()
+    + endDate()
+    + toString()
+}
+Class "<<Domain>>\n<<Value Object>>\nPhaseDescription" as PDESC {
+    - String: description
+    ..
+    + descriptionText()
+    + toString()
+}
+Class "<<Domain>>\n<<Value Object>>\nPhaseType" as PTYPE {
+    - String: type
+    ..
+    + typeOfPhase()
+    + toString()
+}
+Class "<<Domain>>\n<<Value Object>>\nPhaseStatus" as PSTAT {
+    - String: type
+    ..
+    + typeOfPhase()
+    + toString()
+}
+Class "<<Domain>>\n<<Value Object>>\nPhasePeriod" as PPERIOD {
+    - LocalDate: start
+    - LocalDate: finish
+    ..
+    + startDate()
+    + endDate()
+    + toString()
+}
+
+Class "<<Presentation>>\n<<UI>>\nSetupRecruitmentProcessUI" as UI {
+    ..
+    + doShow()
+}
+
+Class "<<Application>>\n<<Controller>>\nSetupRecruitmentProcessController" as CTRL {
+    ..
+    + listAllIncompleteJobOpenings()
+    + findById(Integer: jobReference)
+    + setupRecruitmentProcess(LocalDate: startDateRecruitment, LocalDate: endDateRecruitment, List<PhaseDTO>)
+}
+
+Class "<<Infrastructure>>\n<<Service>>\nJobOpeningManagementService" as SERVICEJO {
+    ..
+    + listAllIncompleteJobOpenings()
+    + setupJobOpeningWithRecruitmentProcess(RecruitmentProcess recruitmentProcess, JobOpening incompleteJobOpening)
+}
+Class "<<Infrastructure>>\n<<Service>>\nRecruitmentProcessManagementService" as SERVICERP {
+    ..
+    + findById(Integer: jobReference)
+    + setupRecruitmentProcess(LocalDate: initialDateRecruitment, LocalDate: finalDateRecruitment, List<Phase>: listPhases, Integer: jobReference)
+}
+
+Class "<<Factory>>\nRepositoryFactory" as REPOFAC {
+    ..
+    + create()
+    + getInstance()
+}
+
+Class "<<Persistence>>\n<<Repository>>\nJobOpeningRepository" as JREPO {
+    ..
+    + findById(JobReference: jobReference)
+    + findAll()
+    + save(Entity: entity)
+}
+Class "<<Persistence>>\n<<Repository>>\nRecruitmentProcessRepository" as RREPO {
+    ..
+    + findById(Integer: jobReference)
+    + findAll()
+    + save(Entity: entity)
+}
+Interface "<<Presentation>>\nAbstractUI" as ABUI {
+    ..
+    - doShow()
+}
+Interface "<<Persistentence>>\nDomainRepository" as DREPO {
+    ..
+    - findAll()
+    - findAllById(Iterable<Id>: id)
+    - findById(Id: id)
+    - save(Entity: Entity)
+}
+
+UI ..> CTRL
+UI ..> PDTO: creates
+UI --|> ABUI: implements
+
+CTRL ..> SERVICEJO
+CTRL ..> SERVICERP
+
+SERVICERP ..> REPOFAC
+SERVICERP ..> R
+SERVICERP ..> RREPO
+
+SERVICEJO ..> REPOFAC
+SERVICEJO ..> J
+SERVICEJO ..> JREPO
+
+REPOFAC --> JREPO: creates
+REPOFAC --> RREPO: creates
+
+R o-- RPERIOD
+R o-- P
+
+P o-- PPERIOD
+P o-- PSTAT
+P o-- PTYPE
+P o-- PDESC
+
+J o-- JREF
+
+RREPO --|> DREPO: implements
+
+JREPO --|> DREPO: implements
+
+@enduml

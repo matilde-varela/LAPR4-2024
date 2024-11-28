@@ -1,0 +1,72 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+skinparam sequenceMessageAlign left
+
+Participant "<<Presentation>>\nRegisterPluginUI" as UI
+Participant "<<Application>>\nRegisterPluginController" as CTRL
+Participant "<<Infrastructure>>\nInterviewModelManagementService" as SERVICEIM
+Participant "<<Domain>>\n<<Root Entity>>\nInterviewModel" as IM
+Participant "<<Domain>>\n<<Value Object>>\nInterviewModelName" as IMNAME
+Participant "<<Domain>>\n<<Value Object>>\nInterviewModelDescription" as IMDESC
+Participant "<<Domain>>\n<<Value Object>>\nFullClassName" as IMPLUGIN
+Database "<<Infrastructure>>\nInterviewModelRepository" as IMREPO
+
+Activate UI
+
+    UI -> CTRL**: create()
+
+    UI -> CTRL: registerInterviewPlugin(String: nameInterview, String: description, String: class)
+
+    Activate CTRL
+
+    CTRL -> SERVICEIM**: create()
+
+    CTRL -> SERVICEIM: registerInterviewPlugin(String: nameInterview, String: description, String: class)
+
+    Activate SERVICEIM
+
+    SERVICEIM -> IM**: create(String: nameInterview, String: description, String: class)
+
+    Activate IM
+
+    IM -> IMNAME**: create()
+
+    IM -> IMNAME: nameOfPlugin(nameInterview)
+
+    Activate IMNAME
+
+    Deactivate IMNAME
+
+    IM -> IMDESC**: create()
+
+    IM -> IMDESC: descriptionOfPlugin(description)
+
+    Activate IMDESC
+
+    Deactivate IMDESC
+
+    IM -> IMPLUGIN**: create()
+
+    IM -> IMPLUGIN: fullClassOfPlugin(fullClass)
+
+    Activate IMPLUGIN
+
+    Deactivate IMPLUGIN
+
+    SERVICEIM -> IMREPO: save(interviewModel)
+
+    Activate IMREPO
+
+    Deactivate IMREPO
+
+    SERVICEIM --> CTRL: registerInterviewPlugin
+
+    Deactivate SERVICEIM
+
+    CTRL --> UI: registerInterviewPlugin
+
+    UI -> UI: doShow()
+
+@enduml

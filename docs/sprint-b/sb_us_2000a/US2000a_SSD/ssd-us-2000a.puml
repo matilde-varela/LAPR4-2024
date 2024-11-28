@@ -1,0 +1,32 @@
+@startuml US2000a_SSD
+autonumber
+title US2000a System Sequence Diagram
+
+actor "Operator" as USER
+participant "System" as SYS
+
+activate USER
+
+USER -> SYS : asks to register a candidate
+
+activate SYS
+SYS --> USER : asks for candidate's name
+deactivate SYS
+USER -> SYS : insert the name
+
+activate SYS
+SYS --> USER : asks for candidate's email
+deactivate SYS
+USER -> SYS : insert the email
+activate SYS
+
+SYS --> USER : asks for candidate's phone number
+deactivate SYS
+USER -> SYS : insert the phone number
+activate SYS
+SYS --> USER : create the candidate and the corresponding user
+deactivate SYS
+
+deactivate USER
+
+@enduml

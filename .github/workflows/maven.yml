@@ -1,0 +1,70 @@
+# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Java built with Maven and Publishing of Artifacts
+
+#trigger events and specification of their repository target branches
+on:
+  push:
+    branches:
+      - master
+      - main
+
+
+jobs:
+  # 1st job
+  test_and_build:
+    # virtual machine that will run the job
+    runs-on: ubuntu-latest
+
+    steps:
+    # checks-out the repository in GitHub, so that the job can have access to it
+    - uses: actions/checkout@v3
+      with:
+        ref: 'main'
+        #fetching all the branch history
+        fetch-depth: 0
+
+    # loads within the virtual machine environment the specified version of the JDK
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: 'maven'  #load dependencies specified on the pom file
+
+    - name: Build with Maven
+      # The verify phase is executed, which typically compiles the source code, runs tests, and packages the application if the build is successful.
+      run: |
+            mvn --batch-mode --update-snapshots verify
+            mkdir artifacts && cp */target/*.jar artifacts
+
+    # finds the jar files within the project, specified with the directory path,  and puts them all in a zip
+    - name: Upload JAR file
+      uses: actions/upload-artifact@v4
+      with:
+        name: sem4pi_23_24_2dg2_jar
+        path: artifacts
+        if-no-files-found: warn
+        overwrite: true
+
+  # the artifacts are available for download on GitHub, on Actions - simply click on the commit and then on Artifacts
+
+
+
+
+
+
+
+
+
+
+
+
+
+

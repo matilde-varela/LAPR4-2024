@@ -1,0 +1,21 @@
+@startuml US1005_SSD
+autonumber
+
+actor "Customer Manager" as USER
+participant "System" as SYS
+
+activate USER
+
+USER -> SYS : asks to list all the applications for a job opening
+activate SYS
+SYS --> USER : shows the job opening with applications and asks\n to select one
+deactivate SYS
+
+USER -> SYS : selects the job opening
+activate SYS
+SYS --> USER : shows the applications list
+deactivate SYS
+
+deactivate USER
+
+@enduml

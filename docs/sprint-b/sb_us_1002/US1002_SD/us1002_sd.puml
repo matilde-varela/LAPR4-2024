@@ -1,0 +1,176 @@
+@startuml US1002_SD
+
+title [US1002 - Sequence Diagram]
+
+participant "<<presentation>>\n:RegisterJobOpeningUI" as UI
+control "<<application>>\n:RegisterJobOpeningController" as CTRL
+participant "<<service>>\n:AuthorizationService" as AuthSvc
+participant "<<service>>\n:CustomerManagementService" as CustomerManagement
+database "<<repository>>\n:ContractTypesRepository" as ContractTypesRepository
+database "<<repository>>\n:WorkModesRepository" as WorkModesRepository
+database "<<repository>>\n:RequirementsSpecificationsRepository" as RequirementsSpecificationsRepository
+participant "<<domain>>\n:RequirementSpecification" as RequirementSpecification
+database "<<repository>>\n:CustomerRepository" as CustomerRepository
+participant "<<service>>\n:CustomerListDTOService" as CustomerListDTO
+participant "<<service>>\n:JobOpeningManagementService" as JobManagement
+database "<<repository>>\n:JobOpeningRepository" as JobOpeningRepository
+participant "<<domain>>\n:JobOpening" as JobOpening
+participant "<<domain>>\n:ContractType" as ContractType
+participant "<<domain>>\n:WorkMode" as WorkMode
+participant "<<domain>>\n:Address" as Address
+
+
+
+activate UI
+
+UI -> CTRL : create()
+
+activate CTRL
+deactivate CTRL
+
+UI -> CTRL : getCustomersList()
+activate CTRL
+
+    CTRL -> AuthSvc : loggedinUserWithPermissions(BaseRole.CUSTOMER_MANAGER)
+    activate AuthSvc
+    deactivate AuthSvc
+
+    CTRL -> CustomerManagement : getAssignedCustomerCodesList(username)
+    activate CustomerManagement
+
+        CustomerManagement -> CustomerRepository : getCustomersByUsername(username)
+        note right: Username is the Customer\n Manager's email
+        activate CustomerRepository
+        deactivate CustomerRepository
+
+            CustomerManagement -> CustomerListDTO : convertToDTO(customersList)
+            activate CustomerListDTO
+            deactivate CustomerListDTO
+
+    deactivate CustomerManagement
+
+    CTRL --> UI : customerListDTO
+
+deactivate CTRL
+
+UI -> CTRL : getContractTypesList()
+
+'Getting the Contract Type
+activate CTRL
+
+CTRL -> ContractTypesRepository : getContractTypes()
+activate ContractTypesRepository
+deactivate ContractTypesRepository
+
+ loop for all contract types
+    CTRL -> ContractType : toDTO()
+    activate ContractType
+    deactivate ContractType
+ end loop
+
+
+
+  CTRL --> UI : contractTypeListDTO
+
+deactivate CTRL
+
+UI -> UI : doShow()
+
+'Getting the Work Mode
+UI -> CTRL : getWorkModesList()
+
+activate CTRL
+
+    CTRL -> WorkModesRepository : getWorkModes()
+
+    activate WorkModesRepository
+    deactivate WorkModesRepository
+
+    loop for all work modes
+        CTRL -> WorkMode : toDTO()
+        activate WorkMode
+        deactivate WorkMode
+    end loop
+
+    CTRL --> UI : workModeListDTO
+
+deactivate CTRL
+
+UI -> UI : doShow()
+
+
+UI -> CTRL : getRequirementsSpecificationsList()
+
+'Getting Customer ID
+activate CTRL
+
+    CTRL -> RequirementsSpecificationsRepository : getCustomerRequirementsSpecificationsFileList(customerCode)
+    note right: The process of selecting the requirements specifications is not a responsibility of\n US1002, rather from US1009, which will be integrated in this functionality.
+    activate RequirementsSpecificationsRepository
+    deactivate RequirementsSpecificationsRepository
+
+    loop for all requirements specifications file
+
+        CTRL -> RequirementSpecification : toDTO()
+        activate RequirementSpecification
+        deactivate RequirementSpecification
+    end loop
+
+
+    CTRL --> UI
+
+deactivate CTRL
+
+UI -> UI : doShow()
+
+UI -> CTRL : registerJobOpening(function, contractTypeDenomination,\n workModeDenomination, streetName, city, district, state,\n zipcode, numVacancies, description, requirementsFileName,\n customerInfo)
+
+'Register a new Job Opening
+activate CTRL
+
+        CTRL -> RequirementsSpecificationsRepository : getFileByName(requirementsFileName)
+        activate RequirementsSpecificationsRepository
+        deactivate RequirementsSpecificationsRepository
+
+    'Job Opening Encapsulation
+    CTRL -> JobManagement : registerJobOpening(streetName, city, district, state, zipcode, function, contractTypeDenomination, workModeDenomination, customerCode, numVacancies, description, requirementsSpecificationsFile, customerInfo)
+    activate JobManagement
+
+        JobManagement -> JobOpeningRepository : lastJobReference(customerInfo.customerCode)
+        note left: The system does not have access to the previous job opening\n reference if it was made in another session, so this step is necessary.
+        activate JobOpeningRepository
+        deactivate JobOpeningRepository
+
+    JobManagement -> JobOpening : create(function, contractTypeDenomination, workModeDenomination, streetName, city,\n district, state, zipcode, customerCode, numVacancies, description,\n requirementsSpecificationsFile)
+    activate JobOpening
+
+        JobOpening -> JobOpening : jobReference(lastJobReference)
+
+        JobOpening -> ContractType : valueOf(contractTypeDenomination)
+        activate ContractType
+        deactivate ContractType
+
+        JobOpening -> WorkMode : valueOf(workModeDenomination)
+        activate WorkMode
+        deactivate WorkMode
+
+        JobOpening -> Address : create(city, district, state, zipcode)
+        activate Address
+        deactivate Address
+
+    deactivate JobOpening
+
+    JobManagement -> JobOpeningRepository : save(jobOpening)
+    activate JobOpeningRepository
+    deactivate JobOpeningRepository
+
+    deactivate JobManagement
+
+
+    CTRL --> UI
+
+deactivate CTRL
+
+deactivate UI
+
+@enduml

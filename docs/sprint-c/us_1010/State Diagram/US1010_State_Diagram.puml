@@ -1,0 +1,42 @@
+    @startuml US1010_Recruitment_State_Diagram
+'https://plantuml.com/state-diagram
+
+title US1010 Recruitment State Diagram
+
+scale 350 width
+
+state PLANNED {
+}
+
+state APPLICATION {
+}
+
+state SCREENING {
+}
+
+state INTERVIEW {
+}
+
+state ANALYSIS {
+}
+
+state RESULTS {
+}
+
+state CONCLUDED {
+}
+
+[*] --> PLANNED : Recruitment was just created \nand has all phases planned out
+PLANNED -left-> APPLICATION : Activity important to that \ncertain phase is happening and the previous phase as concluded
+APPLICATION --> SCREENING : Activity important to that \ncertain phase is happening and the previous phase as concluded
+APPLICATION <-- SCREENING
+SCREENING -right-> INTERVIEW : Activity important to that \ncertain phase is happening and the previous phase as concluded
+SCREENING <-- INTERVIEW
+INTERVIEW --> ANALYSIS : Activity important to that \ncertain phase is happening and the previous phase as concluded
+INTERVIEW <-- ANALYSIS
+ANALYSIS -left-> RESULTS : Activity important to that \ncertain phase is happening and the previous phase as concluded
+ANALYSIS <-left- RESULTS
+RESULTS --> CONCLUDED : All activity on this recruitment process has ended
+
+
+@enduml

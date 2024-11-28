@@ -1,0 +1,147 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+Actor "CustomerManager" as CM
+Participant "<<Presentation>>\nChangePhaseStatesUI" as UI
+Participant "<<Application>>\nChangePhaseStatesController" as CTRL
+Participant "<<Service>>\nJobOpeningManagementService" as RPS
+Database "<<Repository>>\nJobOpeningRepository" as RPREPO
+Participant "<<Domain>>\nJobOpening" as RP
+Participant "<<Domain>>\nPhase" as P
+Database "<<Repository>>\nPhaseRepository" as PREPO
+
+Activate CM
+
+Activate UI
+
+    CM -> UI : Start a Phase
+
+        alt Current Phase is "Screening" or "Interviews"
+
+            UI -> CTRL : hasRequirementSpecification(jobReference) / \nhasInterviewModel(jobReference)
+
+            Activate CTRL
+
+                CTRL -> RPS : hasRequirementSpecification(jobReference) / \nhasInterviewModel(jobReference)
+
+                Activate RPS
+
+                    RPS -> RPREPO : getJobOpeningWithJobReference(jobReference)
+
+                    Activate RPREPO
+
+                    Deactivate RPREPO
+
+                    RPS -> RP : hasRequirementSpecification() / \nhasInterviewModel()
+
+                    Activate RP
+
+                    Deactivate RP
+
+                    RPS --> CTRL : result
+
+                Deactivate RPS
+
+                CTRL --> UI : result
+
+            Deactivate CTRL
+
+            alt It doesn't have
+
+                UI --> CM : Failure message with justification
+
+            else It does have
+
+                UI -> CTRL : startAPhase(jobReference)
+
+                Activate CTRL
+
+                    CTRL -> RPS : startAPhase(jobReference)
+
+                    Activate RPS
+
+                        RPS -> P : currentPhase.setStatusDescriptionAsCONCLUDED()
+
+                        Activate P
+
+                        Deactivate P
+
+                        RPS -> PREPO : save(currentPhase)
+
+                        Activate PREPO
+
+                        Deactivate PREPO
+
+                        RPS -> P : previousPhase.setStatusDescriptionAsON_GOING()
+
+                        Activate P
+
+                        Deactivate P
+
+                        RPS -> PREPO : save(previousPhase)
+
+                        Activate PREPO
+
+                        Deactivate PREPO
+
+                        RPS --> CTRL : Success message
+
+                    Deactivate RPS
+
+                    CTRL --> UI : Success message
+
+                Deactivate CTRL
+
+                UI --> CM : Success message
+
+            end
+
+        else Rest of the cases
+
+            UI -> CTRL : startAPhase(jobReference)
+
+                            Activate CTRL
+
+                                CTRL -> RPS : startAPhase(jobReference)
+
+                                Activate RPS
+
+                                    RPS -> P : currentPhase.setStatusDescriptionAsCONCLUDED()
+
+                                    Activate P
+
+                                    Deactivate P
+
+                                    RPS -> PREPO : save(currentPhase)
+
+                                    Activate PREPO
+
+                                    Deactivate PREPO
+
+                                    RPS -> P : previousPhase.setStatusDescriptionAsON_GOING()
+
+                                    Activate P
+
+                                    Deactivate P
+
+                                    RPS -> PREPO : save(previousPhase)
+
+                                    Activate PREPO
+
+                                    Deactivate PREPO
+
+                                    RPS --> CTRL : Success message
+
+                                Deactivate RPS
+
+                                CTRL --> UI : Success message
+
+                            Deactivate CTRL
+
+            UI --> CM : Success message
+
+        end
+
+@enduml

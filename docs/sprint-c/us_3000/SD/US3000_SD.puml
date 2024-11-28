@@ -1,0 +1,176 @@
+@startuml US3000_SD
+
+title US3000 Sequence Diagram
+
+actor "Customer Manager" as USER
+|||
+
+participant "<<presentation>>\n:ListApplicationsAndStateUI" as UI
+participant "<<application>>\n:ListApplicationsAndStateController" as CTRL
+participant "<<service>>\n:FollowUpConnectionService" as ConnSrv
+participant ":ClientConnectionThread" as CLITHREAD
+participant ":ListingRequestThread" as THREAD
+
+participant "<<service>>\n:ApplicationManagementService" as AppManagement
+database "<<repository>>\n:ApplicationRepositoryRepository" as ApplicationRepository
+participant "<<service>>\n:ApplicationDTOService" as AppDTOServ
+participant "<<domain>>\n:Application" as Application
+
+
+participant "<<service>>\n:JobOpeningManagementService" as JobManagement
+participant ":<<service>>\n:JobOpeningDTOService" as JobDTOServ
+database "<<repository>>\n:JobOpeningRepository" as JobOpeningRepository
+participant "<<domain>>\n:JobOpening" as JobOpening
+
+participant ":DataDTO" as DataDTO
+participant ":DataBlock" as DataBlock
+
+
+
+activate USER
+
+USER -> UI : asks to list all its applications and their states
+activate UI
+
+
+UI -> CTRL : create()
+activate CTRL
+deactivate CTRL
+
+ref over UI
+shared-sequence-diagram
+sequence-diagram-tcp-connection
+end ref
+
+
+UI -> CTRL: getApplicationsList(username)
+ activate CTRL
+
+CTRL -> ConnSrv : getApplicationsList(username)
+activate ConnSrv
+
+ConnSrv -> CLITHREAD : receiveCandidateApplicationAndNumberList(username, code)
+note left
+code = 8 (APPLIST)
+end note
+
+activate CLITHREAD
+
+CLITHREAD -> THREAD** : getApplicationsAndNumber(code, username)
+deactivate CLITHREAD
+activate THREAD
+
+THREAD -> AppManagement : getApplicationsAndNumber(username)
+activate AppManagement
+
+AppManagement -> ApplicationRepository : getApplicationFromCandidateUserName(username)
+activate ApplicationRepository
+deactivate ApplicationRepository
+
+loop for each application
+
+AppManagement -> JobManagement : getJobOpeningList()
+activate JobManagement
+
+JobManagement -> JobOpeningRepository :  getJobOpeningList()
+activate JobOpeningRepository
+deactivate JobOpeningRepository
+
+deactivate JobManagement
+
+loop for each application from a job opening
+
+opt when application match
+
+AppManagement --> AppDTOServ :  convertToDTO(application)
+            activate AppDTOServ
+
+            AppDTOServ -> Application : toDTO()
+            activate Application
+            deactivate Application
+
+            deactivate AppDTOServ
+
+AppManagement -> AppManagement : applicationDTOMap.put(applicationDTO, jobOpeningApplicationNumber)
+activate AppManagement
+deactivate AppManagement
+
+
+end opt
+
+end loop
+
+end loop
+
+ AppManagement --> THREAD : applicationsDTOMap
+ deactivate AppManagement
+
+ THREAD -> THREAD : applicationDTOList
+ activate THREAD
+ deactivate THREAD
+
+THREAD -> DataDTO** : create(version, code)
+
+loop for each list entry
+
+THREAD -> DataDTO : addDataBlock(DATA_LEN_L, DATA_LEN_M, applicationDTO.key())
+activate DataDTO
+
+DataDTO -> DataBlock** : create(DATA_LEN_L, DATA_LEN_M, applicationDTO.key())
+deactivate DataDTO
+
+THREAD -> DataDTO : addDataBlock(DATA_LEN_L, DATA_LEN_M, applicationDTO.value())
+activate DataDTO
+
+DataDTO -> DataBlock : create(DATA_LEN_L, DATA_LEN_M, applicationDTO.value())
+deactivate DataDTO
+
+end loop
+
+
+loop for all DTOs
+THREAD --> ConnSrv : sOut.writeObject(applicationDTO)
+deactivate THREAD
+    note right
+    sOut an ObjectOutputStream from
+    the connection's sock OutputStream
+    end note
+
+end loop
+
+ConnSrv --> CTRL : applicationsListDTO
+deactivate ConnSrv
+
+CTRL --> UI : applicationsListDTO
+deactivate CTRL
+
+opt "0 - Exit"
+
+UI -> CTRL : closeConnection(PORT_NUMBER)
+activate CTRL
+
+CTRL -> ConnSrv : closeConnection(PORT_NUMBER)
+deactivate CTRL
+activate ConnSrv
+
+ConnSrv -> CLITHREAD : closeConnection(code)
+deactivate ConnSrv
+activate CLITHREAD
+note left
+code = 1 (DISCONN)
+end note
+
+CLITHREAD --> CLITHREAD : clientSocket.close()
+
+
+CLITHREAD -[#white]> CLITHREAD
+deactivate CLITHREAD
+
+
+UI -> UI :stock.close()
+end opt
+
+UI --> USER : shows application list
+deactivate UI
+
+@enduml

@@ -1,0 +1,155 @@
+@startuml
+
+title US1011 Sequence Diagram
+
+actor "Customer Manager" as USER
+
+participant "SelectInterviewModelUI" as UI <<presentation>>
+participant "SelectInterviewModelController" as CTRL <<application>>
+participant "AuthorizationService" as AUTH <<service>>
+participant "InterviewModel\nManagementService" as IMMS <<service>>
+participant "InterviewModel\nDtoService" as IMDTOService <<service>>
+participant "JobOpening\nManagementService" as JOMS <<service>>
+participant "JobOpening\nDtoService" as JOMS_DTO <<service>>
+participant "InterviewModel" as IM <<domain>>
+participant "JobOpening" as JO <<domain>>
+participant "JobOpeningRepository" as JOREPO <<repository>>
+participant "InterviewModel\nRepository" as IMREPO <<repository>>
+
+
+activate USER
+
+USER -> UI: wants to select interview model for a job opening
+activate UI
+
+UI -> CTRL**: create
+
+UI -> CTRL: activeJobOpenings()
+activate CTRL
+
+
+CTRL -> AUTH:  ensureAuthenticatedUserHasAnyOf(roles)
+activate AUTH
+deactivate AUTH
+
+CTRL ->JOMS: activeJobOpenings()
+activate JOMS
+
+JOMS -> JOREPO: activeJobOpenings()
+activate JOREPO
+
+JOREPO --> JOMS: jobOpenings
+deactivate JOREPO
+
+JOMS -> JOMS_DTO: convertToDto(jobOpenings)
+activate JOMS_DTO
+
+
+JOMS_DTO -> JO: toDto()
+activate JO
+
+JO --> JOMS_DTO: jobOpeningDto
+deactivate JO
+
+
+JOMS_DTO --> JOMS: jobOpeningDtos
+deactivate JOMS_DTO
+
+JOMS --> CTRL: jobOpeningDtos
+deactivate JOMS
+
+CTRL --> UI: jobOpeningDtos
+deactivate CTRL
+
+UI --> USER: shows active job openings
+
+USER -> UI: selects job opening
+
+UI --> USER: shows the interview models
+
+UI -> CTRL: availableInterviewModels()
+activate CTRL
+
+CTRL -> AUTH:  ensureAuthenticatedUserHasAnyOf(roles)
+activate AUTH
+deactivate AUTH
+
+CTRL ->IMMS: availableInterviewModels()
+activate IMMS
+
+IMMS -> IMREPO: availableInterviewModels()
+activate IMREPO
+
+IMREPO --> IMMS: interviewModels
+deactivate IMREPO
+
+IMMS -> IMDTOService: toDto(interviewModels)
+activate IMDTOService
+
+
+IMDTOService -> IM: toDto()
+activate IM
+
+IM --> IMDTOService: interviewModelsDTO
+deactivate IM
+
+IMDTOService --> IMMS: interviewModels
+deactivate IMDTOService
+
+IMMS --> CTRL: interviewModelsDtos
+deactivate IMMS
+
+CTRL --> UI: interviewModelsDtos
+deactivate CTRL
+
+UI -> USER: shows available Interview Models
+USER -> UI: selects an interview model
+
+UI -> CTRL: updateJobOpening(jobOpeningDTO, interviewModelDTO)
+activate CTRL
+
+
+CTRL -> AUTH:  ensureAuthenticatedUserHasAnyOf(BaseRoles.CUSTOMER_MANAGER, BaseRoles.ADMIN)
+activate AUTH
+deactivate AUTH
+
+
+
+CTRL -> JOREPO: ofIdentity(jobReference)
+activate JOREPO
+
+note right CTRL
+The jobReference comes from the Dto instance. ofIdentity obtains
+the jobOpening instance.
+end note
+
+JOREPO --> CTRL: jobOpening
+deactivate JOREPO
+
+CTRL -> IMREPO: ofIdentity(interviewModel)
+activate IMREPO
+
+
+
+IMREPO --> CTRL: interviewModel
+deactivate IMREPO
+
+CTRL -> JO: updateJobOpening(interviewModel)
+activate JO
+deactivate JO
+
+CTRL -> JOREPO: save(jobOpening)
+activate JOREPO
+deactivate JOREPO
+
+CTRL --> CTRL: jobOpening
+deactivate CTRL
+
+CTRL --> UI: success
+deactivate CTRL
+
+UI --> USER: displays success
+deactivate UI
+deactivate USER
+
+@enduml

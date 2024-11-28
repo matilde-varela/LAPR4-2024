@@ -1,0 +1,143 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+title US1004 Class Diagram
+
+
+
+abstract class AbstractUI {
+    # doShow()
+    # show()
+    # mainLoop()
+}
+
+
+class EditJobOpeningUI {
++ doShow()
+}
+
+class EditJobOpeningController  {
++ getJobOpeningList() : jobOpeningListDto
++ editableJobOpeningInformation(jobOpeningDto) : editableInformationValues
++ changeJobOpeningInformation(jobOpening,selectInformation, newInformation) : boolean
++ necessaryInformation(selectInformation)
+- editInformation(ejobOpening, selectInformation, newInformation) : jobOpening
+}
+
+note left
+The method necessaryInformation()
+returns different things depending
+on th selected information.
+end note
+
+
+'Requirements
+class RequirementSpecification {
+- requirementName : RequirementName
+- description : RequirementDescription
+- plugin : ConfigFileName
+}
+
+'Interview
+class InterviewModel {
+- interviewModelName : InterviewModelName
+- description : InterviewModelDescription
+- plugin : ConfigFileName
+}
+
+class InterviewModelRepository {
+
+}
+
+class AuthorizationService {
++ ensureAuthenticatedUserHasAnyOf(roles)
+}
+
+'Job Opening
+class JobOpening  {
+- function : JobFunction
+- jobOpeningAddress : Address
+- jobReference : JobReference
+- numVacancies : NumberVacancy
+- description : JobDescription
+- rank : Rank
++ changeInformation(selectedInformation,newInformation) : Boolean
+}
+
+class WorkMode {
+-  workModeDenomination : String
+}
+
+class ContractType  {
+- contractTypeDenomination : String
+}
+
+interface JobOpeningRepository {
++ ofIdentity(jobReference)
++ save(jobOpening)
+}
+
+interface WorkModeRepository {
+}
+
+interface ContractTypeRepository {
+}
+
+interface InterviewModelRepository {
+}
+
+interface RequirementSpecificationRepository {
+}
+
+interface DomainRepository {
++ findAll()
++ save()
+}
+
+class EditableInformation{
+ - name
+ + isEditable
+ + notStartedEditableInformation() : List<EditableInformation>
+ + startedEditableInformation() : List<EditableInformation>
+ + screeningEditableInformation() : List<EditableInformation>
+}
+
+
+AbstractUI <|-- EditJobOpeningUI
+EditJobOpeningUI .-> EditJobOpeningController
+EditJobOpeningController --> AuthorizationService
+EditJobOpeningController .--> JobOpeningRepository
+EditJobOpeningController .--> WorkModeRepository
+EditJobOpeningController .--> ContractTypeRepository
+EditJobOpeningController .--> RequirementSpecificationRepository
+EditJobOpeningController .--> InterviewModelRepository
+
+EditJobOpeningController --> JobOpening
+JobOpening "*" <-- JobOpeningRepository
+
+JobOpening --> "1" WorkMode
+JobOpening --> "1" ContractType
+
+
+
+
+RequirementSpecification "1" <-up- JobOpening : specifies >
+InterviewModel "1" <-up- JobOpening : specifies >
+
+WorkModeRepository -->  "*" WorkMode
+RequirementSpecificationRepository -->  "*" RequirementSpecification
+InterviewModelRepository -->  "*" InterviewModel
+ContractTypeRepository -->  "*" ContractType
+
+
+JobOpeningRepository .-> DomainRepository
+ContractTypeRepository .-> DomainRepository
+InterviewModelRepository .-> DomainRepository
+RequirementSpecificationRepository .-> DomainRepository
+WorkModeRepository .--> DomainRepository
+EditJobOpeningController .-> EditableInformation
+JobOpening .--> EditableInformation
+
+
+
+@enduml

@@ -1,0 +1,142 @@
+@startuml
+autonumber
+
+title US2000b Sequence Diagram
+
+actor "Operator" as operator
+
+participant ":EnableDisableCandidateUI" as UI <<presentation>>
+participant ":EnableDisableController" as CTRL <<application>>
+participant ":CandidateManagementService" as CMS <<service>>
+participant ":CandidateManagementDtoService" as CandidateManagementDtoService <<service>>
+participant ":AuthorizationService" as AUTHZ <<service>>
+participant ":UserManagementService" as UserManagementService <<service>>
+participant ":SystemUserRepository" as UserRepository <<repository>>
+
+
+note right UserManagementService
+The AuthorizationService and UserManagementService are implemented
+in the eapli framework and will
+be used in this functionality.
+end note
+
+activate operator
+
+operator -> UI : wants to enable/disable a candidate
+activate UI
+
+UI -> CTRL**: create
+
+UI --> operator: asks whether it wants to enable or disable
+
+operator -> UI : chooses the option
+
+alt enable
+
+UI ->   CTRL: deactivatedCandidates()
+activate CTRL
+
+CTRL -> AUTHZ:  ensureAuthenticatedUserHasAnyOf(roles)
+activate AUTHZ
+deactivate AUTHZ
+
+
+CTRL -> CMS: deactivatedCandidates()
+activate CMS
+
+CMS -> CandidateManagementDtoService: convertToDTO(candidates)
+activate CandidateManagementDtoService
+    CandidateManagementDtoService-->CMS: candidatesDTOList
+deactivate CandidateManagementDtoService
+CMS --> CTRL: candidatesDTOList
+deactivate CMS
+
+CTRL --> UI: candidatesDTOList
+deactivate CTRL
+
+UI --> operator: shows candidates
+operator -> UI: selects candidate to enable
+
+UI -> CTRL: activateCandidate(candidate)
+activate CTRL
+
+CTRL -> AUTHZ:  ensureAuthenticatedUserHasAnyOf(roles)
+activate AUTHZ
+deactivate AUTHZ
+
+CTRL -> CMS : activateCandidate(candidate)
+activate CMS
+
+CMS-> UserManagementService: activateUser(user)
+activate UserManagementService
+    UserManagementService -> UserRepository: save(user)
+    activate UserRepository
+        UserRepository --> UserManagementService: success
+    deactivate UserRepository
+    UserManagementService --> CMS: success
+deactivate UserManagementService
+
+CMS --> CTRL : success
+deactivate CMS
+
+CTRL --> UI : success
+deactivate CTRL
+
+else disable
+
+UI ->   CTRL: activeCandidates()
+activate CTRL
+
+CTRL -> AUTHZ:  ensureAuthenticatedUserHasAnyOf(roles)
+activate AUTHZ
+deactivate AUTHZ
+
+CTRL -> CMS: activeCandidates()
+activate CMS
+
+CMS ->CandidateManagementDtoService: convertToDTO(candidates)
+activate CandidateManagementDtoService
+    CandidateManagementDtoService--> CMS: candidatesDTOList
+deactivate CandidateManagementDtoService
+CMS --> CTRL: candidatesDTOList
+deactivate CMS
+
+CTRL --> UI: candidatesDTOList
+deactivate CTRL
+
+UI --> operator: shows candidates
+operator -> UI: selects candidate to disable
+
+UI -> CTRL: deactivateCandidate(candidate)
+activate CTRL
+
+CTRL -> AUTHZ:  ensureAuthenticatedUserHasAnyOf(roles)
+activate AUTHZ
+deactivate AUTHZ
+
+CTRL -> CMS : deactivateCandidate(candidate)
+activate CMS
+
+CMS-> UserManagementService: deactivateUser(user)
+activate UserManagementService
+    UserManagementService -> UserRepository: save(user)
+    activate UserRepository
+        UserRepository --> UserManagementService: success
+    deactivate UserRepository
+    UserManagementService --> CMS: success
+deactivate UserManagementService
+
+CMS --> CTRL : success
+deactivate CMS
+
+CTRL --> UI : success
+deactivate CTRL
+
+
+end
+
+UI --> operator: success
+
+deactivate operator
+
+@enduml

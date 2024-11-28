@@ -1,0 +1,22 @@
+@startuml US1018_SSD
+autonumber
+title US1018  System Sequence Diagram
+
+actor "Customer Manager" as USER
+participant "System" as SYS
+
+activate USER
+
+USER -> SYS : asks  to execute the process that evaluates the interviews for a job opening.
+
+activate SYS
+SYS --> USER : shows job opening list
+deactivate SYS
+USER -> SYS : select a job opening
+
+activate SYS
+SYS --> USER: start the evaluation and confirm success
+deactivate SYS
+deactivate USER
+
+@enduml

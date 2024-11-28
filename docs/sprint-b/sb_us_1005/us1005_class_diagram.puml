@@ -1,0 +1,164 @@
+@startuml US1005_class_diagram
+'https://plantuml.com/class-diagram
+
+title US1005 Class Diagram
+
+'DTO
+'package <<DTO>> {
+
+class JobOpeningDTO {
++ create(e: element)
+}
+
+class ApplicationDTO {
++ create(e: element)
+}
+'}
+
+
+'package <<Presentation>> {
+class ListJobOpeningApplicationsUI <<Presentation>> {
++ doShow()
+}
+'}
+
+'package <<Application>> {
+class ListJobOpeningApplicationsController <<Application>> {
++ getJobOpeningList()
++ getApplicationList()
+}
+'}
+
+class JobOpeningManagementService <<Service>> {
++ getJobOpeningList()
++ getJobOpening(jobOpeningDTO)
+}
+
+class ApplicationManagementService <<Service>> {
++ getApplicationsList(jobOpening)
+}
+
+
+'package <<Domain>> {
+'Requirements
+package <<Authentication_and_Users>> {
+class AuthenticationService <<Application>> <<Service>> {
+}
+class Session <<Domain>> <<Value Object>> {}
+class SystemUser <<Domain>> <<Aggregate Root>> {}
+class Username <<Domain>> <<Value Object>> <<ID>> {
+- value : String
+}
+}
+
+class CostumerManager <<Domain>> <<Aggregate Root>> {}
+
+class JobOpening <<Domain>> <<Aggregate Root>> {
+- function : String
+- contractType : ContractType
+- workMode : WorkMode
+- companyAddress : Address
+- costumerCode : String
+- companyName : String
+- numVacancies : Integer
+- description : String
+- requirementsSpecificationsFile : File
++ create()
+}
+
+class WorkMode <<Domain>> <<Value Object>> {
+- workModeDenomination: String
++ valueOf()
++ mode()
+}
+
+class ContractType <<Domain>> <<Value Object>> {
+- contractTypeDenomination : String
++ valueOf()
++ type()
+}
+
+class Application <<Domain>> <<Aggregate Root>> {
+- requirementAnswer : String
+- requirementResult : Integer
+- file : File
+- email : String
+- applicationDate : Date
+- applicationStatus : Boolean
+- candidateName : String
+- phoneNumber : Integer
+- interview : Interview
+}
+
+class Interview <<Domain>> <<Value Object>> {
+- interviewTypeDenomination : String
+- schedule : Date
+- interviewResult : String
+- interviewGrade : Integer
+- justification : String
+- interviewAnswer :  String
++ valueOf()
+}
+
+'package <<Persistence>> {
+class JobOpeningRepository <<Persistence>> <<Repository>> {
++ getJobOpeningList()
++ getJobOpening(JobOpeningDTO)
+}
+
+class ApplicationRepository <<Persistence>> <<Repository>> {
+
+}
+
+interface RepositoryDatabase <<Persistence>> {
++ save(Entity: Entity)
+}
+
+
+'}
+
+'Associations
+'Basic Flow
+CostumerManager ..> ListJobOpeningApplicationsController
+ListJobOpeningApplicationsUI ..> ListJobOpeningApplicationsController
+ListJobOpeningApplicationsController ..> JobOpeningRepository
+ListJobOpeningApplicationsController ..> ApplicationRepository
+ListJobOpeningApplicationsController ..> ApplicationManagementService
+ListJobOpeningApplicationsController ..> JobOpeningManagementService
+
+'Domain Layer
+WorkMode "1" --> "*" JobOpening : characterizes
+ContractType "1" --> "*" JobOpening  : characterizes
+JobOpeningManagementService --> JobOpeningRepository
+JobOpeningManagementService --> JobOpening
+ApplicationManagementService --> Application
+ApplicationManagementService --> ApplicationRepository
+
+
+''Persistence Layer
+JobOpeningRepository "1" --> "*" ContractType : rebuilds
+JobOpeningRepository "1" --> "*" WorkMode : rebuilds
+JobOpeningRepository <.. JobOpening : persisted by
+
+ApplicationRepository <.. Application : persisted by
+ApplicationRepository "1" --> "*" Interview : rebuilds
+
+'
+''Interface implementation
+RepositoryDatabase <|.. JobOpeningRepository : implements
+RepositoryDatabase <|.. ApplicationRepository : implements
+
+
+''DTO
+ListJobOpeningApplicationsUI ..> JobOpeningDTO
+ListJobOpeningApplicationsUI ..> ApplicationDTO
+
+'Authentication
+Session --> SystemUser
+SystemUser -> Username
+AuthenticationService ..> Username
+AuthenticationService ..> Session
+AuthenticationService ..> ListJobOpeningApplicationsController
+CostumerManager --|> SystemUser
+
+@enduml

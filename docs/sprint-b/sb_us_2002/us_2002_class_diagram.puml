@@ -1,0 +1,148 @@
+@startuml US2002_class_diagram
+'https://plantuml.com/class-diagram
+
+title US2002 Class Diagram
+
+
+'package <<Presentation>> {
+class RegisterJobOpeningApplicationUI <<Presentation>> {
+}
+'}
+
+'package <<Application>> {
+class RegisterJobOpeningApplicationController <<Application>> {
++ registerApplication(sharedFolder, jobOpening)
++ getFiles(sharedFolder)
++ getCandidate(number)
++ registerApplication(files, applicationDate, phone, jobOpening)
+}
+'}
+
+
+'package <<Domain>> {
+'Requirements
+package <<Authentication_and_Users>> {
+class AuthenticationService <<Application>> <<Service>> {
+}
+class Session <<Domain>> <<Value Object>> {}
+class SystemUser <<Domain>> <<Aggregate Root>> {}
+class Username <<Domain>> <<Value Object>> <<ID>> {
+- value : String
+}
+}
+
+class JobOpening <<Domain>> <<Aggregate Root>> {
+- JobFunction function
+- ContractType contractType
+- WorkMode workMode
+- Address jobOpeningAddress
+- JobReference jobReference
+- NumberVacancy numVacancies
+- JobDescription description
+- RequirementSpecification requirementsSpecification
+- Rank rank
+}
+
+class Candidate <<Domain>> <<Aggregate Root>> {
++ getEmail(file)
++ register(candidate)
+}
+
+class Operator <<Domain>> <<Aggregate Root>> {}
+
+class JobOpeningManagementService <<Service>> {
++ getJobOpeningList()
++ getJobOpening(jobOpeningDTO)
+}
+
+
+class Application <<Domain>> <<Aggregate Root>> {
+- requirementAnswer : String
+- requirementResult : Integer
+- file : File
+- email : String
+- applicationDate : Date
+- applicationStatus : Boolean
+- candidateName : String
+- phoneNumber : Integer
+- interview : Interview
+
++ getInformationFromFile(file)
++ create(file, applicationDate, candidate)
+}
+
+class Interview <<Domain>> <<Value Object>> {
+- interviewTypeDenomination : String
+- schedule : Date
+- interviewResult : String
+- interviewGrade : Integer
+- justification : String
+- interviewAnswer :  String
++ valueOf()
+}
+
+'package <<Persistence>> {
+
+class ApplicationRepository <<Persistence>> <<Repository>> {
++ save(Application: entity)
+}
+
+class JobOpeningRepository <<Persistence>> <<Repository>> {
++ save(JobOpening: entity)
+}
+
+class CandidateRepository <<Persistence>> <<Repository>> {
++ findByPhoneNumber(number)
+}
+
+interface RepositoryDatabase <<Persistence>> {
++ save(Entity: Entity)
+}
+
+class ApplicationManagementService <<Service>> {
++ registerApplication(files, applicationDate, candidate)
+}
+
+
+'}
+
+'Associations
+'Basic Flow
+Operator ..> RegisterJobOpeningApplicationController
+RegisterJobOpeningApplicationUI ..> RegisterJobOpeningApplicationController
+RegisterJobOpeningApplicationController ..> ApplicationRepository
+RegisterJobOpeningApplicationController ..> CandidateRepository
+RegisterJobOpeningApplicationController ..> ApplicationManagementService
+RegisterJobOpeningApplicationController ..> JobOpeningManagementService
+
+'Domain Layer
+Interview "1" --> "1" Application : characterizes
+
+
+
+''Persistence Layer
+JobOpeningManagementService --> JobOpeningRepository
+JobOpeningManagementService --> JobOpening
+ApplicationManagementService --> ApplicationRepository
+ApplicationManagementService --> Application
+ApplicationRepository <.. Application : persisted by
+ApplicationRepository "1" --> "*" Interview : rebuilds
+
+CandidateRepository <.. Candidate : persisted by
+
+
+'
+''Interface implementation
+RepositoryDatabase <|.. ApplicationRepository : implements
+RepositoryDatabase <|.. CandidateRepository : implements
+
+
+'Authentication
+Session --> SystemUser
+SystemUser -> Username
+AuthenticationService ..> Username
+AuthenticationService ..> Session
+AuthenticationService ..> RegisterJobOpeningApplicationController
+Operator --|> SystemUser
+
+@enduml

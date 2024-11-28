@@ -1,0 +1,249 @@
+@startuml
+
+title US1013 Sequence Diagram
+
+participant "<<presentation>>\n:ApplicationRankingUI" as UI
+participant ":ApplicationFilePopUpWindow" as PopUp <<application>>
+participant "<<application>>\n:ApplicationRankingController" as CTRL
+participant "<<domain>>\n:DescendingInterviewResultComparator" as COMPARATOR
+
+participant "<<service>>\n:RecruitmentProcessManagementService" as RecruitSrv
+participant "<<domain>>\n:RecruitmentProcess" as RecruitmentProcess
+database "<<repository>>\n:RecruitmentProcessRepository" as RecruitmentProcessRepository
+
+participant "<<service>>\n:JobOpeningManagementService" as JobSrv
+database "<<repository>>\n:JobOpeningRepository" as JobOpeningRepository
+
+participant "<<service>>\n:RankManagementService" as RankSrv
+participant "<<domain>>\n:Rank" as Rank
+participant "<<domain>>\n:RankOrder" as RankOrder
+database "<<repository>>\n:RankRepository" as RankRepository
+
+participant "<<service>>\n:ApplicationListDTOService" as AppDTOSrv
+participant "<<service>>\n:ApplicationManagementService" as AppSrv
+database "<<repository>>\n:ApplicationRepository" as ApplicationRepository
+
+autonumber
+
+activate UI
+'======= Get Job Openings of Customer =======
+ref over UI
+[shared-sequence-diagram]
+sequence-diagram-get-job-openings
+end ref
+note right
+The query in this reference is the only different
+thing it retrieves only the active jobOpenings
+(getCustomerManagerActiveJobOpenings(customerCode))
+end note
+
+
+UI -> UI : show()
+
+'======= Check if Phase is Right =======
+
+alt option = see rank
+
+
+UI -> CTRL : getRankOrderList(jobReference)
+activate CTRL
+
+CTRL -> RecruitSrv : checkIfRecruitmentProcessIsInAnalysisPhase(jobReference)
+activate RecruitSrv
+
+RecruitSrv -> RecruitmentProcessRepository : getRecruitmentProcessByJobReference(jobReference)
+activate RecruitmentProcessRepository
+deactivate RecruitmentProcessRepository
+
+RecruitSrv -> RecruitmentProcess : currentActivePhase()
+
+activate RecruitmentProcess
+RecruitmentProcess --> RecruitSrv : phase
+deactivate RecruitmentProcess
+
+alt phase == ANALYSIS
+RecruitSrv --> CTRL : true
+end alt
+deactivate RecruitSrv
+
+'======= Get Rank Order/Applications =======
+CTRL -> RankSrv : getRank(jobReference)
+activate RankSrv
+
+RankSrv -> RankRepository : getRankFromJobReference(jobReference)
+activate RankRepository
+deactivate RankRepository
+
+loop for all rankOrders
+    RankSrv -> RankOrder : toDTO()
+    activate RankOrder
+    deactivate RankOrder
+end loop
+
+RankSrv --> CTRL : rankListDTO
+deactivate RankSrv
+
+CTRL --> UI : rankListDTO
+deactivate CTRL
+
+UI -> UI : show()
+
+end alt
+
+UI -> CTRL : getApplications(jobOpeningDTO)
+activate CTRL
+
+    CTRL -> JobSrv : getJobOpening(jobOpeningDTO)
+    activate JobSrv
+
+        JobSrv -> JobOpeningRepository : findAll
+        activate JobOpeningRepository
+        deactivate JobOpeningRepository
+
+        deactivate JobSrv
+
+        CTRL -> AppSrv : getApplications(jobOpening)
+        activate AppSrv
+        deactivate AppSrv
+
+        CTRL -> RecruitSrv : checkRecruitmentProcessHasInterview(jobReference)
+        activate RecruitSrv
+
+        RecruitSrv -> RecruitmentProcessRepository : getRecruitmentProcessByJobReference(jobReference)
+        activate RecruitmentProcessRepository
+        deactivate RecruitmentProcessRepository
+
+        RecruitSrv -> RecruitmentProcess : hasInterview()
+        activate RecruitmentProcess
+        deactivate RecruitmentProcess
+
+        RecruitSrv --> CTRL : true
+        deactivate RecruitSrv
+
+        alt true
+            CTRL --> COMPARATOR** : sort(applications)
+        end alt
+
+        CTRL --> AppDTOSrv : convertApplicationsToDTO(applications)
+        activate AppDTOSrv
+        deactivate AppDTOSrv
+
+        CTRL --> UI : applicationsListDTO
+        deactivate CTRL
+
+        UI -> UI : show()
+
+'======= Show Application Files =======
+opt user chooses to see application files
+UI -> UI : seeApplicationFileInWindow(applicationDTO, filename)
+activate UI
+UI -> CTRL : getApplicationFile(applicationDTO, filename)
+activate CTRL
+
+    CTRL -> AppSrv : getApplicationFileContent(applicationDTO, filename)
+    activate AppSrv
+
+        AppSrv -> ApplicationRepository : getApplicationFromDTO(applicationDTO)
+        activate ApplicationRepository
+        deactivate ApplicationRepository
+
+        loop for all application files
+            AppSrv --> AppSrv : applicationFile.name().equals(filename)
+            note right
+            files are loop until finding one
+            that has the same file name
+            end note
+        end loop
+
+        AppSrv --> CTRL : applicationFileContent
+    deactivate AppSrv
+
+    CTRL --> UI : applicationFileContent
+    deactivate CTRL
+
+    UI -> PopUp** : create(applicationFileContent)
+    deactivate UI
+    activate PopUp
+        PopUp -> PopUp : show()
+        autonumber stop
+        PopUp -[#white]> PopUp
+    deactivate PopUp
+    |||
+end opt
+
+autonumber resume
+
+'======= Update Application Rank =======
+UI -> CTRL : updateRanking(jobOpeningDTO, applicationDTO, order)
+activate CTRL
+
+    CTRL -> RankSrv : updateRanking(jobOpeningDTO, applicationDTO, order)
+    deactivate CTRL
+    activate RankSrv
+
+    RankSrv -> AppSrv : getApplication(applicationDTO)
+    activate AppSrv
+
+        AppSrv -> ApplicationRepository : getApplication(applicationDTO)
+        activate ApplicationRepository
+        deactivate ApplicationRepository
+
+    deactivate AppSrv
+
+    RankSrv -> RankRepository : getRankFromJobReference((jobReference)
+    activate RankRepository
+    deactivate RankRepository
+
+    RankSrv -> Rank : rankOrderUntilOrder(order)
+    activate Rank
+    deactivate Rank
+
+    RankSrv -> Rank : rankOrdersSinceOrder(order)
+    activate Rank
+    deactivate Rank
+    note left
+    These rankOrder lists will have
+    their ranked number corrected
+    according to the new rankOrder
+    end note
+
+    RankSrv -> RankOrder** : create(application, score)
+
+    RankSrv -> RankRepository : save(rank)
+    deactivate RankSrv
+    activate RankRepository
+        autonumber stop
+        RankRepository -[#white]> RankRepository
+    deactivate RankRepository
+
+autonumber resume
+'======= Exit - Check all Applications are Ranked =======
+opt option = 0 ("exit")
+
+UI -> CTRL : checkNeededApplicationsAreRanked(jobReference)
+activate CTRL
+
+    CTRL -> RankSrv : checkNeededApplicationsAreRanked(jobOpeningDTO)
+    activate RankSrv
+
+    RankSrv -> RankRepository : getRankFromJobReference((jobReference)
+    activate RankRepository
+    deactivate RankRepository
+
+    RankSrv -> RankSrv :  calculateNumberOfRankOrdersToSave(numVacancies)
+
+    alt calculated number > rank.orders.size
+        RankSrv --> CTRL : false
+        CTRL --> UI : missing rank orders
+    else
+        RankSrv --> CTRL : true
+        CTRL --> UI : all ranked
+        deactivate RankSrv
+        deactivate CTRL
+    end alt
+
+end opt
+
+deactivate UI
+
+@enduml

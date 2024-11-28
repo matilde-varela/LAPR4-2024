@@ -1,0 +1,120 @@
+@startuml US1003_SD
+
+title [US1003 - Sequence Diagram]
+
+participant "<<presentation>>\n:RegisterJobOpeningUI" as UI
+control "<<application>>\n:ListJobOpeningController" as CTRL
+database "<<repository>>\n:CriteriaRepository" as CriteriaRepository
+participant "<<domain>>\n:Criteria" as Criteria
+participant "<<service>>\n:AuthorizationService" as AuthSvc
+participant "<<service>>\n:CustomerManagementService" as CustomerManagement
+database "<<repository>>\n:CustomerRepository" as CustomerRepository
+participant "<<domain>>\n:Customer" as Customer
+participant "<<service>>\n:JobOpeningManagementService" as JobManagement
+participant "<<service>>\n:JobOpeningListDTOService" as JobOpeningListDTO
+database "<<repository>>\n:JobOpeningRepository" as JobOpeningRepository
+participant "<<domain>>\n:JobOpening" as JobOpening
+
+activate UI
+
+UI -> CTRL : create()
+
+activate CTRL
+deactivate CTRL
+
+UI -> CTRL : getJobOpeningList()
+activate CTRL
+
+    CTRL -> AuthSvc : loggedinUserWithPermissions(BaseRole.CUSTOMER_MANAGER)
+    activate AuthSvc
+    deactivate AuthSvc
+
+    CTRL -> CustomerManagement : getAssignedCustomerCodesList(username)
+    activate CustomerManagement
+
+        CustomerManagement -> CustomerRepository : getCustomersByUsername(username)
+        note right: Username is the Customer\n Manager's email
+        activate CustomerRepository
+        deactivate CustomerRepository
+
+        loop for all codes
+            CustomerManagement -> Customer : customerCode()
+            activate Customer
+            deactivate Customer
+        end loop
+
+    deactivate CustomerManagement
+
+    CTRL -> JobManagement : getJobOpeningsFromCustomerCodes(assignedCustomerCodesList)
+    activate JobManagement
+        loop for each code
+        JobManagement -> JobOpeningRepository : getJobOpeningListMatchingCustomerCode(customerCode)
+        activate JobOpeningRepository
+        deactivate JobOpeningRepository
+        end loop
+    deactivate JobManagement
+
+CTRL -> JobOpeningListDTO : convertToDTO(jobOpeningList)
+activate JobOpeningListDTO
+
+    loop for each JobOpening
+        JobOpeningListDTO -> JobOpening : toDTO()
+        activate JobOpening
+        deactivate JobOpening
+    end loop
+deactivate JobOpeningListDTO
+
+CTRL --> UI : jobOpeningListDTO
+deactivate CTRL
+
+UI -> CTRL : getCriteria()
+activate CTRL
+
+
+    CTRL -> CriteriaRepository : jobOpeningCriteria()
+    activate CriteriaRepository
+    deactivate CriteriaRepository
+
+    loop for all criteria
+
+        CTRL -> Criteria : toDTO()
+        activate Criteria
+        deactivate Criteria
+
+    end loop
+
+    CTRL --> UI : criteriaListDTO
+    deactivate CTRL
+
+UI -> UI : doShow()
+
+UI -> CTRL : criteria
+activate CTRL
+
+    opt criteria was selected
+        CTRL -> JobManagement : filterJobOpeningList(criteria)
+        activate JobManagement
+        deactivate JobManagement
+    end opt
+
+
+CTRL -> JobOpeningListDTO : convertToDTO(jobOpeningList)
+activate JobOpeningListDTO
+
+    loop for each JobOpening
+        JobOpeningListDTO -> JobOpening : toDTO()
+        activate JobOpening
+        deactivate JobOpening
+    end loop
+deactivate JobOpeningListDTO
+
+CTRL --> UI : jobOpeningListDTO
+deactivate CTRL
+
+
+UI -> UI : doShow()
+UI -[#white]-> UI
+
+deactivate UI
+
+@enduml

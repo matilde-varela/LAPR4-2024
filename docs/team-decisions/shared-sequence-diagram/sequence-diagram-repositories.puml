@@ -1,0 +1,36 @@
+@startuml
+autonumber
+
+title Sequence Diagram - Repositories
+
+participant "Xxxx" as CTRL
+participant "PersistenceContext" as PC <<persistence>>
+participant "RepositoryFactory" as RF <<factory>>
+database "XxxRepository" as REPO <<repository>>
+
+activate CTRL
+CTRL -> PC : repositories()
+activate PC
+
+PC -> RF: create()
+activate RF
+deactivate RF
+
+PC --> CTRL: factory
+deactivate PC
+
+CTRL -> RF: xxx()
+activate RF
+
+
+RF -> REPO: create()
+activate REPO
+deactivate REPO
+
+RF --> CTRL: xxxRepository
+deactivate RF
+deactivate CTRL
+
+
+
+@enduml

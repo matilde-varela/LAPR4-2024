@@ -1,0 +1,116 @@
+@startuml US1017_CD
+title US1017 Class Diagram
+
+'package "Presentation" {
+    class UploadInterviewResponsesUI <<Presentation>> {
+    }
+'}
+
+'package "Application" {
+    class UploadInterviewResponsesController <<Application>> {
+        + getJobOpeningList()
+        + getApplicationList()
+    }
+'}
+
+class JobOpeningManagementService <<Service>> {
+    + getJobOpeningsInInterviewAndAnalysisPhase(username)
+    + getJobOpening(jobOpeningDTO)
+}
+
+class InterviewModelManagementService <<Service>> {
+    + checkAnswersFileIsValid(interviewName, filepath)
+}
+
+class ApplicationManagementService <<Service>> {
+    + getApplicationsFromJobReference(jobReference)
+    + uploadInterviewAnswerFile(applicationDTO, filepath)
+}
+
+class ApplicationDTOService <<Service>> {
+    + convertToDTO(applicationList)
+}
+
+    class AuthenticationService <<Application>> <<Service>> {
+        + loggedinUserWithPermissions(BaseRole.CUSTOMER_MANAGER)
+    }
+
+    class CustomerManager <<Domain>> <<Aggregate Root>> {
+        + customerCode()
+    }
+
+    class JobOpening <<Domain>> <<Aggregate Root>> {
+        + toDTO()
+    }
+
+    class Application <<Domain>> <<Aggregate Root>> {
+        + toDTO()
+    }
+
+    class Interview <<Domain>> <<Value Object>> {
+        + valueOf()
+    }
+
+    class InterviewAnswer <<Domain>> <<Value Object>> {
+            + InterviewAnswer(fileWithAnswers)
+        }
+'}
+
+'package "Persistence" {
+    class InterviewModelRepository <<Persistence>> <<Repository>> {
+        + getFileByName(interviewName)
+    }
+
+    class JobOpeningRepository <<Persistence>> <<Repository>> {
+        + getJobOpeningsInInterviewAndAnalysisPhase(phase, customerManagerUsername)
+        + getJobOpening(JobOpeningDTO)
+    }
+
+    class ApplicationRepository <<Persistence>> <<Repository>> {
+        + getApplicationsFromJobReference(jobReference)
+        + getApplicationFromDTO(applicationDTO)
+        + save(application)
+    }
+
+'}
+
+package "Plugin" {
+    class Main {
+    + checkFileFormat(String filepath)
+    }
+}
+
+' Associations
+CustomerManager ..> UploadInterviewResponsesController
+UploadInterviewResponsesUI ..> UploadInterviewResponsesController
+UploadInterviewResponsesController ..> JobOpeningRepository
+UploadInterviewResponsesController ..> ApplicationRepository
+UploadInterviewResponsesController ..> ApplicationManagementService
+UploadInterviewResponsesController ..> JobOpeningManagementService
+UploadInterviewResponsesController ..> ApplicationDTOService
+UploadInterviewResponsesController ..> InterviewModelManagementService
+UploadInterviewResponsesController ..> AuthorizationService
+
+' Domain Layer
+Interview "0..1" -> "*" Application : characterizes
+InterviewAnswer "1" -> "1" Interview : characterizes
+JobOpeningManagementService --> JobOpeningRepository
+JobOpeningManagementService --> JobOpening
+ApplicationManagementService --> Application
+ApplicationManagementService --> ApplicationRepository
+ApplicationDTOService --> Application
+InterviewModelManagementService --> InterviewModelRepository
+
+
+' Persistence Layer
+JobOpeningRepository "1" --> "1" InterviewModel : rebuilds
+JobOpeningRepository <.. JobOpening : persisted by
+
+ApplicationRepository <.. Application : persisted by
+ApplicationRepository "1" --> "*" Interview : rebuilds
+
+' Authentication
+AuthenticationService ..> UploadInterviewResponsesController
+UploadInterviewResponsesController ...> Main
+
+@enduml

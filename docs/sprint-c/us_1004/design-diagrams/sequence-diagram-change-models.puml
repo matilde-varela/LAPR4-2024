@@ -1,0 +1,25 @@
+@startuml
+
+title [US1004] - Change Information Sequence Diagram
+
+
+participant ":EditJobOpeningController" as CTRL <<application>>
+database ":Xxxx\nRepository" as RS_REPO <<repository>>
+participant ":JobOpening" as JO <<domain>>
+
+
+activate CTRL
+
+CTRL -> RS_REPO: ofIdentity(xxxIdentifier)
+activate RS_REPO
+
+RS_REPO --> CTRL: xxx
+deactivate RS_REPO
+
+CTRL -> JO: changeXxxx(xxx)
+activate JO
+deactivate JO
+
+
+
+@enduml

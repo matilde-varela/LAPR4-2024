@@ -1,0 +1,30 @@
+@startuml US2002_SSD
+autonumber
+
+actor "Operator" as USER
+participant "System" as SYS
+
+activate USER
+
+USER -> SYS : asks to register an application
+activate SYS
+
+SYS --> USER : asks for the shared folder where the files used for the application are
+deactivate SYS
+
+USER -> SYS : selects the shared folder
+activate SYS
+
+SYS --> USER : shows the job openings and asks\n to select one
+deactivate SYS
+
+USER -> SYS : selects the jobOpening
+activate SYS
+
+SYS --> USER : shows operation success
+deactivate SYS
+
+
+deactivate USER
+
+@enduml

@@ -1,0 +1,86 @@
+@startuml
+autonumber
+actor "User" as USER
+
+participant ":BaseAplication" as BA <<presentation>>
+    participant ":LoginUI" as LUI <<presentation>>
+    participant ":MainMenu" as MM <<presentation>>
+participant ":AuthzRegistry" as AR <<application>>
+participant ":AuthenticationCredentialHandler" as ACH <<application>>
+participant ":AuthenticationService" as auth <<service>>
+participant ":AuthorizationService" as authz <<service>>
+
+
+activate USER
+    USER -> BA : wants to run application
+activate BA
+
+    BA  -> AR**: configure(userRepo, policy, encoder)
+
+deactivate AR
+
+    BA -> BA: run()
+activate BA
+    BA-> BA: doMain()
+activate BA
+
+    BA -> LUI ** : create
+activate LUI
+    LUI -> LUI : show()
+    LUI -> ACH: authenticated()
+activate ACH
+    ACH -> auth: authenticate()
+activate auth
+    auth --> ACH: boolean
+deactivate auth
+    ACH --> LUI : boolean
+deactivate ACH
+    LUI--> BA: boolean
+deactivate LUI
+
+alt true
+
+    BA -> MM**: create
+    BA -> MM: mainLoop()
+    activate MM
+    MM -> MM :  doShow()
+    activate MM
+    MM-> MM: buildMainMenu()
+    activate MM
+    MM-> authz : isAuthenticatedUserAuthorizedTo(roles)
+    activate authz
+    authz --> MM: boolean
+    deactivate authz
+
+    alt true
+        note right of MM
+            the menu of the
+            application will
+            present according
+            to the role of the user
+                end note
+    end
+
+        MM --> MM:
+        deactivate MM
+
+  MM --> MM :
+    deactivate MM
+MM --> BA:
+deactivate MM
+end
+
+
+
+BA --> BA
+deactivate BA
+
+BA --> BA
+deactivate BA
+
+
+BA --> USER
+
+deactivate BA
+
+@enduml

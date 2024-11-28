@@ -1,0 +1,79 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+Actor "CustomerManager" as CM
+Participant "<<Presentation>>\nChangePhaseStatesUI" as UI
+Participant "<<Application>>\nChangePhaseStatesController" as CTRL
+Participant "<<DTO>>\nRecruitmentProcessDTO" as RPDTO
+Participant "<<Service>>\nRecruitmentProcessManagementService" as RPS
+Participant "<<Service>>\nRecruitmentProcessDTOService" as RPDTOS
+Database "<<Repository>>\nPhaseRepository" as PREPO
+Participant "<<Domain>>\nPhase" as P
+
+Activate CM
+
+CM -> UI : Go back
+
+Activate UI
+
+    UI -> RPDTO : getPhases()
+
+    Activate RPDTO
+
+    Deactivate RPDTO
+
+    UI -> UI : Checks if it can go back
+
+    alt No previous Phase or work on this Phase already happened
+
+        UI --> CM : Failure message
+
+    else Can go back
+
+        UI -> CTRL : goBackAPhase(phaseIdOfCurrentPhase, phaseIdOfPreviousPhase)
+
+            Activate CTRL
+
+                CTRL -> RPS : goBackAPhase(recruitmentProcess)
+
+                Activate RPS
+
+                    RPS -> P : currentPhase.setStatusDescriptionAsCONCLUDED()
+
+                    Activate P
+
+                    Deactivate P
+
+                    RPS -> PREPO : save(currentPhase)
+
+                    Activate PREPO
+
+                    Deactivate PREPO
+
+                    RPS -> P : previousPhase.setStatusDescriptionAsON_GOING()
+
+                    Activate P
+
+                    Deactivate P
+
+                    RPS -> PREPO : save(previousPhase)
+
+                    Activate PREPO
+
+                    Deactivate PREPO
+
+                    RPS --> CTRL : Success message
+
+                Deactivate RPS
+
+                CTRL --> UI : Success message
+
+        UI -> UI : doShow()
+
+        UI --> CM : Success message
+
+    end
+
+@enduml

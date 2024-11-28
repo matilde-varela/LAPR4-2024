@@ -1,0 +1,97 @@
+@startuml
+autonumber
+
+title US2000a Sequence Diagram
+
+actor "Operator" as USER
+
+participant "RegisterCandidateUI" as UI <<presentation>>
+participant "RegisterCandidateController" as CTRL <<controller>>
+participant "AuthorizationService" as AUTHZ <<service>>
+participant "CandidateManagementService" as CMS <<service>>
+participant "EventPublisher" as EP <<domain>>
+participant "NewCandidateUser\nRegisteredEvent" as EVENT <<domain>>
+participant "NewCandidateUserRegistered\nWatchDog" as WD <<domain>>
+participant "AddCandidateOnNewCandidateUser\nRegisteredController" as CTRL_EVENT <<domain>>
+participant "CandidateUser" as CUser <<domain>>
+participant "UserManagement\nService" as UMS <<service>>
+participant CandidateRepository as CREP <<domain>>
+
+
+
+activate USER
+
+USER -> UI: wants to register new candidate
+activate UI
+
+UI -> CTRL**: create
+
+
+
+UI --> USER: asks for necessary information
+
+
+USER -> UI: name, email and phoneNumberExtension, phoneNumber
+UI -> CTRL: registerCandidate(name, email, extension, phoneNumber)
+activate CTRL
+
+
+
+CTRL -> AUTHZ:  loggedinUserWithPermissions(BaseRoles.OPERATOR)
+activate AUTHZ
+
+AUTHZ -> CTRL:  return if the logged user has the right permissions
+deactivate AUTHZ
+
+CTRL -> CMS: registerCandidate(name, email, phoneNumber)
+activate CMS
+
+
+CMS -> UMS: registerNewUser(email, password, name,"Candidate",email, roles)
+activate UMS
+UMS -> CMS: candidateUser
+deactivate UMS
+
+CMS -> EVENT **: create(user, phoneNumber)
+
+
+CMS -> EP : publish(event)
+activate EP
+
+EP -> WD: onEvent()
+activate WD
+
+WD -> CTRL_EVENT: registerNewCandidate(newCandidateUserRegisteredEvent)
+activate CTRL_EVENT
+
+CTRL_EVENT -> CUser**: create
+activate CUser
+CUser --> CTRL_EVENT: candidateUser
+deactivate CUser
+
+CTRL_EVENT -> CREP: save(candidateUser)
+activate CREP
+deactivate CREP
+
+
+
+
+deactivate UMS
+deactivate EP
+deactivate CTRL_EVENT
+
+
+
+CMS --> CTRL: success
+deactivate CMS
+
+CTRL --> UI: success
+deactivate CTRL
+
+
+
+UI --> USER: success
+
+deactivate USER
+
+@enduml

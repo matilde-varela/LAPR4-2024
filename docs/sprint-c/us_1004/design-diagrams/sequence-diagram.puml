@@ -1,0 +1,146 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+title US1004 - Sequence Diagram
+
+autonumber
+
+actor "Customer Manager" as USER
+participant ":EditJobOpeningUI" as UI <<presentation>>
+participant ":EditJobOpeningController" as CTRL <<application>>
+participant ":AuthorizationService" as AUTHZ <<service>>
+database ":JobOpeningRepository" as JO_REPO <<repository>>
+participant ":JobOpening" as JO <<domain>>
+
+activate USER
+
+USER -> UI : asks to edit job opening
+activate UI
+
+UI -> CTRL**: create
+
+UI -> CTRL : getJobOpeningList()
+activate CTRL
+
+ref over CTRL
+**[ref1]:** Check **sequence-diagram-get-job-openings**
+in the folder **team-decisions**
+end ref
+
+CTRL --> UI: jobOpeningListDTO
+deactivate CTRL
+
+UI --> USER : displays the job openings and asks to select one
+deactivate UI
+
+
+USER -> UI : selects job opening
+activate UI
+
+    UI -> CTRL: editableJobOpeningInformation(jobOpeningDto)
+    activate CTRL
+
+    CTRL -> AUTHZ:  ensureAuthenticatedUserHasAnyOf(roles)
+    activate AUTHZ
+    deactivate AUTHZ
+
+    CTRL -> JO_REPO: ofIdentity(jobReference)
+    activate JO_REPO
+
+    JO_REPO --> CTRL: jobOpening
+    deactivate JO_REPO
+
+    CTRL -> JO : editableJobOpeningInformation()
+    activate JO
+
+    JO --> CTRL: editableInformationValues
+    deactivate JO
+
+    CTRL --> UI: editableInformationValues
+    deactivate CTRL
+
+
+UI --> USER : shows all the information that can be edited and asks to select one
+deactivate UI
+
+loop while user wants to edit
+    USER -> UI : selects information that wants to edit
+    activate UI
+
+    UI -> CTRL: necessaryInformation(selectInformation)
+    activate CTRL
+
+    alt information == (requirements | interviewModel | ContractType | WorkMode)
+
+        ref over CTRL
+            Check **sequence-diagram-get-information**
+        end ref
+    end alt
+
+    CTRL --> UI: necessaryInformationDto
+    deactivate CTRL
+
+    UI --> USER : asks for the new information
+    deactivate UI
+
+    USER -> UI: provides the new information
+    activate UI
+end loop
+
+    UI -> CTRL: changeJobOpeningInformation(jobOpeningDto, selectInformation, newInformation)
+    activate CTRL
+
+        note left CTRL
+        This method will contain
+        a variable number of attributes,
+        depending on how many changes
+        the user makes.
+        end note
+
+    CTRL -> AUTHZ:  ensureAuthenticatedUserHasAnyOf(roles)
+    activate AUTHZ
+    deactivate AUTHZ
+
+    CTRL -> JO_REPO: ofIdentity(jobReference)
+    activate JO_REPO
+
+    JO_REPO --> CTRL: jobOpening
+    deactivate JO_REPO
+
+     loop for each newInformation
+
+    CTRL -> CTRL: editInformation(jobOpening, selectInformation, newInformation)
+activate CTRL
+
+    alt selectedInformation == (requirements | interviewModel | ContractType | WorkMode)
+        ref over CTRL
+
+            check **sequence-diagram-change-models**
+
+        end ref
+    else
+
+    CTRL -> JO: changeInformation(selectedInformation, newInformation)
+    activate JO
+
+    JO --> CTRL: success
+    deactivate JO
+
+    end alt
+
+    CTRL --> CTRL:
+    deactivate CTRL
+end loop
+    CTRL -> JO_REPO: save(jobOpening)
+    activate JO_REPO
+    deactivate JO_REPO
+
+CTRL --> UI:
+deactivate CTRL
+
+UI --> USER: displays success
+
+deactivate USER
+
+
+@enduml

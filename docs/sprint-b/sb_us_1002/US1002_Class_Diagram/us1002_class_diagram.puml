@@ -1,0 +1,165 @@
+@startuml US1002_class_diagram
+'https://plantuml.com/class-diagram
+
+title US1002 Class Diagram
+
+
+
+class CustomerListDTOService <<service>> {
++ convertToDTO(List<Customer> customersList)
+}
+
+
+class CustomerManagementService <<service>> {
++ getAssignedCustomerCodesList(Email username)
+
+
+}
+
+interface AbstractUI{
+# doShow()
+}
+
+class RegisterJobOpeningUI <<Presentation>> {
++ doShow()
+}
+
+
+class RegisterJobOpeningController <<Application>> {
++ getCustomersList()
++ getContractTypesList()
++ getWorkModesList()
++ getRequirementsSpecificationsList()
++ registerJobOpening(String function, ContractTypeDTO contractTypeDenomination,\n WorkModeDTO workModeDenomination, String streetName, String city, String district,\n String state, String zipcode, Integer numVacancies, String description,\n RequirementSpecificationDTO requirementsFileName, CustomerDTO customerInfo)
+}
+
+class JobOpeningManagementService <<service>> {
++ registerJobOpening(String streetName, String city, String district, String state, String zipcode,\n String function, contractTypeDTO contractTypeDenomination, workModeDTO workModeDenomination,\n Integer numVacancies, String description, RequirementSpecificationDTO requirementsSpecificationsFile,\n CustomerDTO customerInfo)
+}
+
+
+'Requirements
+class RequirementSpecification <<Domain>> <<Aggregate Root>> {
+- fileName : String
++ requirementsFileName()
++ toDto()
+}
+
+class AuthorizationService <<Application>> <<Service>> {
++ loggedinUserWithPermissions(final Role... actions BaseRole.CUSTOMER_MANAGER)
+}
+
+'Address
+class Address <<Domain>> <<Value Object>> {
+- String streetName
+- String city
+- String district
+- String state
+- String zipcode
++ valueOf()
++ create(city, district, state, zipcode)
+}
+
+'Job Opening
+class JobOpening <<Domain>> <<Aggregate Root>> {
+- JobFunction function
+- ContractType contractType
+- WorkMode workMode
+- Address jobOpeningAddress
+- JobReference jobReference
+- NumberVacancy numVacancies
+- JobDescription description
+- RequirementSpecification requirementsSpecification
+- Rank rank
++ jobReference(String lastJobReference)
++ create(function, contractTypeDenomination, workModeDenomination,\n streetName, city, district, state, zipcode, customerCode, numVacancies,\n description, requirementsSpecificationsFile)
+}
+
+class WorkMode <<Domain>> <<Value Object>> {
+- String workModeDenomination
++ valueOf(String workModeDenomination)
++ mode()
++ toDTO()
+}
+
+class ContractType <<Domain>> <<Value Object>> {
+- String contractTypeDenomination
++ valueOf(String contractTypeDenomination)
++ type()
++ toDTO()
+}
+
+class JobOpeningRepository <<Persistence>> <<Repository>> {
++ save(JobOpening entity)
++ lastJobReference(String customerCode)
+}
+
+class WorkModesRepository <<Persistence>> <<Repository>> {
++ save(WorkMode: entity)
++ getWorkModes()
+}
+
+class ContractTypesRepository <<Persistence>> <<Repository>> {
++ save(ContractType: entity)
++ getContractTypes()
+}
+
+class RequirementsSpecificationsRepository <<Persistence>> <<Repository>> {
++ save(RequirementSpecification: entity)
++ getCustomerRequirementsSpecificationsFileList(String customerCode)
++ getFileByName(String requirementsFileName)
+}
+
+class CustomerRepository  <<Persistence>> <<Repository>>  {
++ save(Customer: entity)
++ getCustomersByUsername(Email username)
+}
+
+interface DomainRepository <<Persistence>> {
++ save(Customer: Customer)
+}
+
+
+'Associations
+'Basic Flow
+RegisterJobOpeningUI ..> RegisterJobOpeningController
+RegisterJobOpeningController ...> RequirementsSpecificationsRepository
+RegisterJobOpeningController ...> WorkModesRepository
+RegisterJobOpeningController ...> ContractTypesRepository
+RegisterJobOpeningController ..> JobOpeningRepository
+RegisterJobOpeningController ..> CustomerManagementService
+RegisterJobOpeningController ..> JobOpeningManagementService
+RegisterJobOpeningUI ..> CustomerListDTOService
+
+'Domain Layer
+Address "1" <-up- "*" JobOpening : is located at
+WorkMode "1" --> "*" JobOpening : characterizes
+ContractType "1" --> "*" JobOpening  : characterizes
+RequirementSpecification "*" --> "1" JobOpening : specifies
+RegisterJobOpeningController ..> ContractType
+RegisterJobOpeningController ..> WorkMode
+RegisterJobOpeningController ..> RequirementSpecification
+
+
+'Persistence Layer
+ContractTypesRepository --> ContractType : aggregates
+WorkModesRepository --> WorkMode : aggregates
+JobOpeningRepository <.. JobOpening : persisted by
+RequirementsSpecificationsRepository -> RequirementSpecification : aggregates
+CustomerManagementService ---> CustomerRepository
+CustomerManagementService --> CustomerListDTOService
+JobOpeningManagementService --> JobOpeningRepository
+JobOpeningManagementService --> JobOpening
+
+'Interface implementation
+DomainRepository <|.. JobOpeningRepository : implements
+DomainRepository <|.. ContractTypesRepository : implements
+DomainRepository <|.. WorkModesRepository : implements
+DomainRepository <|.. RequirementsSpecificationsRepository : implements
+DomainRepository <|.. CustomerRepository : implements
+AbstractUI <|.. RegisterJobOpeningUI : implements
+
+'Authentication
+AuthorizationService ..> RegisterJobOpeningController
+
+@enduml

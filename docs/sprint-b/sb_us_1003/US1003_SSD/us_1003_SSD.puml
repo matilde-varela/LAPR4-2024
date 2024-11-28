@@ -1,0 +1,42 @@
+@startuml US1003_SSD
+autonumber
+
+actor "Customer Manager" as CM
+participant "System" as SYS
+
+activate CM
+
+CM -> SYS : asks to list all the job openings
+
+activate SYS
+
+SYS --> CM : asks if it wants to select filtering criteria
+deactivate SYS
+
+alt Criteria Selection
+
+    loop As long as the user wishes
+
+        CM -> SYS : selects the criteria to filter the job openings list
+
+        activate SYS
+
+        SYS --> CM : shows the filtered job openings list according\n to the chosen criteria
+        deactivate SYS
+
+    end loop
+
+else No Criteria
+
+    CM -> SYS : does not want criteria applied to the list
+
+    activate SYS
+
+    SYS --> CM : shows the complete and unfiltered job openings list
+    deactivate SYS
+
+end alt
+
+deactivate CM
+
+@enduml

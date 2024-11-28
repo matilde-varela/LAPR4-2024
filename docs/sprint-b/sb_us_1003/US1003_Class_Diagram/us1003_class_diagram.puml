@@ -1,0 +1,122 @@
+@startuml US1003_class_diagram
+'https://plantuml.com/class-diagram
+
+title US1003 Class Diagram
+
+interface AbstractListUI{
+# elements()
+# elementPrinter()
+# emptyMessage()
+# listHeader()
+# elementName(
+# doShow()
+}
+
+class CustomerManagementService <<Service>> {
++ getAssignedCostumerCodesList(EmailAddress username)
+}
+
+class Customer <<Domain>> <<Aggregate Root>> {
+- CustomerCode customerCode
+- CompanyName companyName
+- EmailAddress costumerManagerEmail
++ customerCode()
++ companyName()
+}
+
+class JobOpeningManagementService <<Service>> {
++ getJobOpeningsFromCostumerCodes(List<CustomerCode> assignedCostumerCodesList)
++ filterJobOpeningList(List<Criteria> criteriaList)
+}
+
+class JobOpeningListDTOService <<Service>> {
++ convertToDTO(List<JobOpening> jobOpeningList)
+}
+
+class ListJobOpeningUI <<Presentation>> {
++ elements()
++ elementPrinter()
++ emptyMessage()
++ listHeader()
++ elementName(
++ doShow()
+}
+
+class ListJobOpeningController <<Application>> {
++ getCriteria()
++ getJobOpeningList()
+}
+
+class Criteria <<Domain>> {
+- denomination : String
++ toDTO()
+}
+
+class AuthorizationService <<Service>> {
++ loggedinUserWithPermissions(Role ... Action BaseRole.CUSTOMER_MANAGER)
+}
+
+class JobOpening <<Domain>> <<Aggregate Root>> {
+- JobFunction function
+- ContractType contractType
+- WorkMode workMode
+- Address jobOpeningAddress
+- JobReference jobReference
+- NumberVacancy numVacancies
+- JobDescription description
+- RequirementSpecification requirementsSpecification
+- Rank rank
+}
+
+class JobOpeningRepository <<Persistence>> <<Repository>> {
++ rebuild(JobOpening: entity)
++ getJobOpeningListMatchingCostumerCode(String costumerCode)
+}
+
+class CriteriaRepository <<Persistence>> <<Repository>> {
++ save(Criteria: entity)
++ jobOpeningCriteria()
+}
+
+class CustomerRepository  <<Persistence>> <<Repository>>  {
++ save(e: Customer)
++ getCostumersByUsername(EmailAddress username)
+}
+
+interface RepositoryDatabase <<Persistence>> {
++ save(Customer: Customer)
+}
+
+
+'Associations
+'Basic Flow
+ListJobOpeningUI ..> ListJobOpeningController
+ListJobOpeningController .> CriteriaRepository
+ListJobOpeningController .> Criteria
+ListJobOpeningController ..> CustomerManagementService
+ListJobOpeningController ..> JobOpeningManagementService
+ListJobOpeningController ..> JobOpeningListDTOService
+
+'Domain Layer
+CustomerManagementService -down-> CustomerRepository
+CustomerManagementService --> Customer
+JobOpeningManagementService --> JobOpeningRepository
+JobOpeningManagementService --> JobOpening
+JobOpeningListDTOService --> JobOpening
+
+
+'Persistence Layer
+CriteriaRepository --> Criteria
+JobOpeningRepository --> JobOpening
+
+'Interface implementation
+RepositoryDatabase <|.. JobOpeningRepository : implements
+RepositoryDatabase <|.. CriteriaRepository : implements
+RepositoryDatabase <|.. CustomerRepository : implements
+
+AbstractListUI <|.. ListJobOpeningUI : implements
+
+'Authentication
+AuthorizationService .right.> ListJobOpeningController
+
+@enduml

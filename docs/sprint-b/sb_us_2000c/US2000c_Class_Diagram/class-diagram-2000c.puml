@@ -1,0 +1,54 @@
+@startuml US2000c_class_diagram
+'https://plantuml.com/class-diagram
+
+title US2000c Class Diagram
+
+interface AbstractUI{
+# doShow()
+}
+
+class ListCandidatesUI{
+
+}
+
+class ListCandidatesController{
+    + getCandidatesList()
+}
+
+class AuthorizationService {
+    + ensureUserWithPermissions(roles)
+}
+
+class CandidateManagementService{
+    + getCandidatesList()
+}
+class ListCandidatesDTOService{
+    + toDTO()
+}
+
+class CandidateRepository{
+    + getAllCandidatesListOrderedByName()
+}
+
+class Candidate{
+    + name
+    + email
+    + phoneNumber
+    + password
+}
+AbstractUI <|-- ListCandidatesUI
+
+ListCandidatesUI ..> ListCandidatesController
+
+ListCandidatesController ..> AuthorizationService
+ListCandidatesController ..> CandidateManagementService
+ListCandidatesController ..> ListCandidatesDTOService
+
+CandidateManagementService --> CandidateRepository
+CandidateManagementService --> Candidate
+ListCandidatesDTOService --> Candidate
+
+CandidateRepository --> Candidate
+
+
+@enduml

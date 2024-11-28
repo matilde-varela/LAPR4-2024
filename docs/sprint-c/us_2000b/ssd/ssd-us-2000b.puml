@@ -1,0 +1,28 @@
+@startuml US2000b_SSD
+autonumber
+title US2000b System Sequence Diagram
+
+actor "Operator" as USER
+participant "System" as SYS
+
+activate USER
+
+USER -> SYS : asks to activate or deactivate a candidate
+
+activate SYS
+SYS --> USER : asks if operator wants to enable or disable a  candidate
+deactivate SYS
+USER -> SYS : insert to enable or disable a candidate
+
+activate SYS
+SYS --> USER : asks to select which candidate wants to activate or deactivate
+deactivate SYS
+USER -> SYS : selects which candidate wants to activate or deactivate
+activate SYS
+
+SYS --> USER : success
+deactivate SYS
+
+deactivate USER
+
+@enduml

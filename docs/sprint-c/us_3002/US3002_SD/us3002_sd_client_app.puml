@@ -1,0 +1,53 @@
+@startuml
+
+title US3002 Sequence Diagram
+
+participant "<<presentation>>\n:ListCustomerJobOpeningsUI" as UI
+participant "<<application>>\n:ListCustomerJobOpeningsController" as CTRL
+
+participant "<<service>>\n:FollowUpConnectionService" as ConnSrv
+
+
+autonumber
+
+activate UI
+ref over UI
+shared-sequence-diagram
+sequence-diagram-tcp-connection
+end ref
+
+UI -> CTRL : jobOpeningsDataList(username)
+note bottom
+username is obtained
+as described in the
+shared diagram
+end note
+
+activate CTRL
+
+CTRL -> ConnSrv : getJobOpeningsDataList(username)
+activate ConnSrv
+
+ConnSrv --> CTRL : jobOpeningCustomerDataDTO
+deactivate ConnSrv
+
+CTRL --> UI : jobOpeningCustomerDataDTO
+deactivate CTRL
+
+UI -> UI : doShow()
+
+opt "0 - Exit"
+
+UI -> CTRL : closeConnection(PORT_NUMBER)
+activate CTRL
+
+CTRL -> ConnSrv : closeConnection(PORT_NUMBER)
+deactivate CTRL
+activate ConnSrv
+
+UI -> UI : sock.close()
+end opt
+
+deactivate UI
+
+@enduml

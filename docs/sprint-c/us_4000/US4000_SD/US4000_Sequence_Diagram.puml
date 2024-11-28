@@ -1,0 +1,102 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+Participant "<<Presentation>>\nAnalyzeApplicationFilesUI" as UI
+Participant "<<Application>>\nAnalyzeApplicationFilesController" as CTRL
+Participant "<<Service>>\nJobOpeningManagementService" as JOS
+Participant "<<Service>>\nJobOpeningDTOService" as JODTOS
+Database "<<Repository>>\nJobOpeningRepository" as JOREPO
+Participant "<<Domain>>\nJobOpening" as JO
+Participant "<<Domain>>\nApplication" as APP
+Participant "<<Service>>\nApplicationFilesThreadService" as TS
+Participant "<<Thread>>\nFileWordCountThread" as FWCT
+
+
+    Activate UI
+
+        UI -> CTRL** : create
+
+        UI -> CTRL : getAllJobOpenings()
+
+        Activate CTRL
+
+        ref over CTRL : sequence-diagram-get-job-openings \n (in docs/team-decisions/shared-sequence-diagram)
+
+        CTRL --> UI : jobOpeningDTOList
+
+        Deactivate CTRL
+
+        UI -> UI : doShow()
+
+        UI -> CTRL : getJobOpeningWithJobReference(jobReference)
+
+        Activate CTRL
+
+            CTRL -> JOS : getJobOpeningWithJobReference(jobReference)
+
+            Activate JOS
+
+                JOS -> JOREPO : getJobOpeningWithJobReference(jobReference)
+
+                Activate JOREPO
+
+                Deactivate JOREPO
+
+            Deactivate JOS
+
+            CTRL -> JO : getApplications()
+
+            Activate JO
+
+                JO --> CTRL : applications
+
+            Deactivate JO
+
+            CTRL --> UI : applications
+
+        Deactivate CTRL
+
+        UI -> UI : doShow()
+
+        UI -> CTRL : analyzeFilesFromApplication(application)
+
+        Activate CTRL
+
+            CTRL -> APP : getFiles()
+
+            Activate APP
+
+            Deactivate APP
+
+            CTRL -> TS : getTop20Words(applicationFiles)
+
+            Activate TS
+
+                loop number of files
+
+                    TS -> FWCT** : create
+
+                end
+
+                TS -> FWCT : start()
+
+                Activate FWCT
+
+                    FWCT -> FWCT : run()
+
+                    FWCT --> TS : top20
+
+                Deactivate FWCT
+
+                TS --> CTRL : top20
+
+            Deactivate TS
+
+            CTRL --> UI : top20
+
+        Deactivate CTRL
+
+        UI -> UI : doShow()
+
+@enduml

@@ -1,0 +1,119 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+title US1015 - Sequence Diagram
+
+autonumber
+
+actor "Customer Manager" as USER
+participant ":VerifyRequirementUI" as UI <<presentation>>
+participant ":VerifyRequirementController" as CTRL <<application>>
+participant ":AuthorizationService" as AUTHZ <<service>>
+participant ":JobOpeningManagementService" as JOMS <<service>>
+participant ":JobOpeningDTOService" as JOS_DTO <<service>>
+database ":JobOpeningRepository" as JO_REPO <<repository>>
+participant ":JobOpening" as JO <<domain>>
+database ":RequirementSpecificationRepository" as RS_REPO <<repository>>
+database ":ApplicationRepository" as A_REPO <<repository>>
+participant ":RequirementSpecificationPlugin" as RSP <<interface>>
+participant ":FileManagement" as FM <<interface>>
+participant ":Application" as A <<domain>>
+
+
+activate USER
+
+USER -> UI : asks to verify requirements of applications
+activate UI
+
+UI -> CTRL**: create
+
+UI -> CTRL : getJobOpeningList()
+activate CTRL
+
+  CTRL -> AUTHZ : loggedinUserWithPermissions(role)
+    activate AUTHZ
+    deactivate AUTHZ
+
+CTRL -> JOMS : jobOpeningsInScreeingListOfCustomerManager(customerManagerUsername)
+activate JOMS
+
+ JOMS -> JO_REPO : jobOpeningsInScreeingListOfCustomerManager(customerManagerUsername)
+    activate JO_REPO
+    deactivate JO_REPO
+
+JOMS -> JOS_DTO : convertToDTO(jobOpeningList)
+activate JOS_DTO
+
+    loop for each JobOpening
+        JOS_DTO -> JO : toDTO()
+        activate JO
+        deactivate JO
+    end loop
+deactivate JOS_DTO
+
+JOMS --> CTRL : jobOpeningListDTO
+deactivate JOMS
+
+CTRL --> UI: jobOpeningListDTO
+deactivate CTRL
+
+UI --> USER : displays the job openings and asks to select one
+deactivate UI
+
+
+USER -> UI : selects job opening
+activate UI
+
+    UI -> CTRL: verifyAvailableRequirements(jobOpeningDto)
+    activate CTRL
+
+    CTRL -> AUTHZ:  ensureAuthenticatedUserHasAnyOf(roles)
+    activate AUTHZ
+    deactivate AUTHZ
+
+    CTRL -> CTRL : verifyRequirementsOfApplications(jobReference)
+    activate CTRL
+
+        CTRL -> A_REPO: applicationsForJobOpeningWithRequirements(jobReference)
+        activate A_REPO
+        A_REPO --> CTRL: applications
+        deactivate A_REPO
+
+             CTRL -> RS_REPO: requirementSpecificationByRequirementName(requirementName)
+             activate RS_REPO
+             deactivate RS_REPO
+
+             CTRL -> FM: importData(configFileName)
+             activate FM
+             deactivate FM
+
+        loop for each application
+
+
+             CTRL -> RSP: evaluateRequirementSpecificationFile(requirementAnswer)
+             activate RSP
+
+             RSP --> CTRL: result
+             deactivate RSP
+
+             CTRL -> A: updateRequirementResult(result)
+             activate A
+             deactivate A
+
+             CTRL -> A_REPO: save(application)
+             activate A_REPO
+             deactivate A_REPO
+        end loop
+
+    CTRL --> CTRL:
+    deactivate CTRL
+
+CTRL --> UI: success
+deactivate CTRL
+
+UI --> USER: displays success
+
+deactivate USER
+
+
+@enduml

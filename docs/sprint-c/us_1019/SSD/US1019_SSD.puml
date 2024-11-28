@@ -1,0 +1,26 @@
+@startuml US1019_SSD
+
+title US1019 System Sequence Diagram
+
+autonumber
+
+actor "Customer Manager" as USER
+participant "System" as SYS
+
+activate USER
+
+USER -> SYS : asks to get an ordered list of the candidates
+activate SYS
+SYS --> USER : displays the job openings and asks the user to select\n one job opening
+deactivate SYS
+
+USER -> SYS : selects the job opening
+activate SYS
+SYS --> USER : shows the candidates list in descending order, accordingly\n to the job interview points
+deactivate SYS
+
+
+
+deactivate USER
+
+@enduml

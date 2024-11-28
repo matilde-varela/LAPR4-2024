@@ -1,0 +1,35 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+CustomerManager -> System : Start a Phase
+
+        alt All Phases are in PLANNED state
+
+            System --> CustomerManager : Asks if it wants to start the Recruitment Process
+
+        else Current Phase is "Screening" or "Interviews"
+
+            System -> System : Checks if it has the \ninterview or requirement depending on the Phase
+
+            alt It doesn't have
+
+                System --> CustomerManager : Failure message
+
+            else It does have
+
+                System -> System : Changes state of current Phase to "CONCLUDED"\n and next Phase to "ON_GOING"
+
+                System --> CustomerManager : Success message
+
+            end
+
+        else Rest of the cases
+
+            System -> System : Changes state of current Phase to "CONCLUDED"\n and next Phase to "ON_GOING"
+
+            System --> CustomerManager : Success message
+
+        end
+
+@enduml

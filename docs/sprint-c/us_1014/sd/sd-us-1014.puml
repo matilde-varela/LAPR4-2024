@@ -1,0 +1,99 @@
+@startuml
+autonumber
+
+title US1014 Sequence Diagram
+
+actor "Customer Manager" as CustomerManager
+
+participant ":ScheduleInterviewUI" as UI <<presentation>>
+participant ":ScheduleInterviewController" as CTRL <<application>>
+participant ":JobOpeningManagementService" as JobOpeningService <<service>>
+participant ":JobOpeningDTOService" as JobOpeningDTOService <<service>>
+participant ":ApplicationManagementService" as ApplicationService <<Service>>
+participant ":ApplicationDTOService" as ApplicationDTOService <<Service>>
+participant ":AuthorizationService" as AUTHZ <<service>>
+participant ":JobOpeningRepository" as JobOpeningRepository <<repository>>
+participant ":ApplicationRepository" as ApplicationRepository <<repository>>
+
+
+note right AUTHZ
+The AuthorizationService is implemented
+in the eapli framework and will
+be used in this functionality.
+end note
+
+activate CustomerManager
+
+CustomerManager -> UI : wants to record the time and date for an interview with the candidate
+activate UI
+
+UI -> CTRL**: create
+UI -> CTRL: getJobOpeningList()
+activate CTRL
+CTRL -> AUTHZ:  ensureAuthenticatedUserHasAnyOf(roles)
+activate AUTHZ
+deactivate AUTHZ
+CTRL -> JobOpeningService: getJobOpeningList()
+activate JobOpeningService
+
+    JobOpeningService -> JobOpeningRepository: getJobOpeningList()
+    activate JobOpeningRepository
+        JobOpeningRepository -> JobOpeningService: JobOpeningList
+    deactivate JobOpeningRepository
+
+    JobOpeningService -> JobOpeningDTOService: convertToDto(jobOpeningList)
+
+    activate JobOpeningDTOService
+        JobOpeningDTOService -> JobOpeningService: JobOpeningDtoList
+    deactivate JobOpeningDTOService
+    JobOpeningService -> CTRL: JobOpeningDtoList
+deactivate JobOpeningService
+CTRL->UI: JobOpeningDtoList
+deactivate CTRL
+
+UI--> CustomerManager: Shows job opening List
+CustomerManager -> UI: Selects a job opening
+
+activate CTRL
+UI -> CTRL: getApplicationsList()
+CTRL -> AUTHZ:  ensureAuthenticatedUserHasAnyOf(roles)
+activate AUTHZ
+deactivate AUTHZ
+CTRL ->ApplicationService: getApplicationsList()
+    activate ApplicationService
+        ApplicationService -> ApplicationRepository: getApplicationsList()
+
+        activate ApplicationRepository
+            ApplicationRepository -> ApplicationService: ApplicationsList
+        deactivate ApplicationRepository
+
+        ApplicationService-> ApplicationDTOService: convertToDto(ApplicationsList)
+        activate ApplicationDTOService
+            ApplicationDTOService -> ApplicationService:ApplicationsDtoList
+        deactivate ApplicationDTOService
+        ApplicationService -> CTRL: ApplicationsDtoList
+    deactivate ApplicationService
+    CTRL -> UI: ApplicationsDtoList
+deactivate CTRL
+
+UI--> CustomerManager: Shows the application list
+CustomerManager-> UI: Selects an application
+UI --> CustomerManager: Asks for day and time for the interview
+CustomerManager-> UI: Insert the day and time
+
+UI->CTRL: updateApplication(applicationDto,date, time)
+activate CTRL
+    CTRL -> ApplicationService: updateApplication(newSchedule)
+    activate ApplicationService
+        ApplicationService -> ApplicationRepository: save(application)
+        activate ApplicationRepository
+        deactivate ApplicationRepository
+    deactivate ApplicationService
+deactivate CTRL
+
+
+UI --> CustomerManager: success
+
+deactivate CustomerManager
+
+@enduml

@@ -1,0 +1,27 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+participant "<<Dispatcher>>\nEventDispatcher" as EVENTD
+participant "<<WatchDog>>\nJobOpeningPhaseChangedWatchDog" as APPRDOG
+participant "<<Application>>\nNotifyCustomerOfChangeInJobOpeningPhasesController" as CTRL
+participant "<<Domain>>\nNotification" as N
+participant "<<Infrastructure>>\nNotificationRepository" as NREPO
+
+EVENTD -> APPRDOG : onEvent
+
+APPRDOG -> CTRL : notifyCustomerOfChangedStatus(JobOpeningPhaseChangedEvent event)
+
+activate CTRL
+
+    CTRL -> N** : new Notification()
+
+    CTRL -> NREPO : save(notification)
+
+    activate NREPO
+
+    deactivate NREPO
+deactivate CTRL
+
+@enduml

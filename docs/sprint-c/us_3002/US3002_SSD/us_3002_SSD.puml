@@ -1,0 +1,27 @@
+@startuml US3002_SSD
+
+title US3002 System Sequence Diagram
+
+autonumber
+
+actor "Customer" as CUST
+participant "System\n(Customer App)" as SYS
+participant "Follow Up Server" as SERVER
+
+activate CUST
+
+CUST -> SYS : asks to list all its job openings
+activate SYS
+
+SYS -> SERVER : establishes TCP connection
+activate SERVER
+SYS -> SERVER : requests all active job\n openings from customer
+
+SERVER --> SYS : job opening list
+deactivate SERVER
+
+SYS --> CUST : shows job opening list
+deactivate SYS
+
+
+@enduml

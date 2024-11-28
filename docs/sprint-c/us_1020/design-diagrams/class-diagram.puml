@@ -1,0 +1,153 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+title US1020 - Class Diagram
+
+
+
+abstract class AbstractUI {
+    # doShow()
+    # show()
+    # mainLoop()
+}
+
+class PublishingResultJobOpeningUI {
++ doShow()
+}
+
+class PublishingResultJobOpeningController  {
++ getJobOpeningList() : jobOpeningListDto
++ publishResultForJobOpening(jobOpeningDto)
+- sendEmail(customerManagerEmail, candidateEmail, jobReference, userPassword)
+- sendEmail(customerManagerEmail, customerEmail, acceptedCandidadeList, jobReference, userPassword)
+- publishResults(jobOpeningDto, customerManagerEmail)
+}
+
+
+interface ApplicationRepository {
++ save(application)
+}
+
+class Application {
++ acceptApplication()
++ rejectApplication()
+}
+
+interface  RankRepository {
++ rankOfJobOpening(jobReference) : Rank
+}
+
+class Rank {
+- JobReference jobOpeningAssociated
+}
+
+class AuthorizationService {
++ ensureAuthenticatedUserHasAnyOf(roles)
+}
+
+
+interface DomainRepository {
++ ofIdentity()
++ save()
+}
+
+interface JobOpeningRepository {
++ jobOpeningsInResultListOfCustomerManager(customerManagerUsername) : Iterable<JobOpening>
+}
+class JobOpeningManagementService{
++ jobOpeningsInResultListOfCustomerManager(customerManagerUsername) : List<JobOpeningDto>
+}
+class JobOpeningDTOService{
++ convertToDTO(jobOpeningList) : List<JobOpeningDto>
+}
+class JobOpening {
++ toDto()
+}
+
+
+interface EventPublisher{
++publish()
+}
+interface EventHandler{
++onEvent()
+}
+interface DomainEvent{
+}
+
+
+class CustomerRepository{
++ customerEmailOfCustomer(companyCode)
+}
+
+'Application Status Changed Event
+class ApplicationStatusChangedWatchDog{
+}
+
+class ApplicationStatusChangedEvent{
+}
+class NotifyCandidateOnApplicationStatusChangedController{
++ notifyCandidateOfChangedStatus(applicationStatusChangedEvent)
+- getSessionCredentials()
+- establishConnection(username, password)
+}
+class NotificationRepository{
+}
+class NotificationManagementService{
++ registerNotification(applicationStatusChangedEvent)
+}
+class Notification {
++ Notification(applicationStatusChangedEvent)
+}
+
+class FollowUpConnectionService{
++ sendEmail(customerManagerEmail, receiverEmail,topic,emailBody)
++ closeConnection()
++ establishConnection(username, password)
+}
+class RankOrder <<(V,#FF8B40) value object>> {
+- orderValue
+}
+
+AbstractUI <|-- PublishingResultJobOpeningUI
+
+PublishingResultJobOpeningUI .--> PublishingResultJobOpeningController
+
+PublishingResultJobOpeningController --> AuthorizationService
+
+PublishingResultJobOpeningController --> ApplicationRepository
+JobOpeningManagementService --> JobOpeningRepository
+JobOpeningManagementService --> JobOpeningDTOService
+JobOpeningManagementService .-> JobOpening
+JobOpeningDTOService .-> JobOpening
+ApplicationRepository .--> Application
+ApplicationRepository .--|> DomainRepository
+RankRepository .-|> DomainRepository
+
+ApplicationStatusChangedEvent .--|> DomainEvent
+
+Rank ---|> EventPublisher
+ApplicationStatusChangedWatchDog .---|> EventHandler
+ApplicationStatusChangedWatchDog .--> NotifyCandidateOnApplicationStatusChangedController
+ApplicationStatusChangedWatchDog .--> ApplicationStatusChangedEvent
+
+PublishingResultJobOpeningController ---> FollowUpConnectionService
+PublishingResultJobOpeningController --> CustomerRepository
+NotifyCandidateOnApplicationStatusChangedController ---> NotificationManagementService
+NotificationManagementService .--> Notification
+NotificationManagementService --> NotificationRepository
+NotificationRepository --> Notification
+
+NotifyCandidateOnApplicationStatusChangedController --> ApplicationStatusChangedEvent
+PublishingResultJobOpeningController --> RankRepository
+PublishingResultJobOpeningController .--> Rank
+Rank --> "1..*" RankOrder
+RankOrder --> "1" Application
+Rank --> ApplicationRepository
+Rank .--> ApplicationStatusChangedEvent
+
+PublishingResultJobOpeningController  --|> EventPublisher
+PublishingResultJobOpeningController -up-> JobOpeningManagementService
+JobOpeningRepository .-|> DomainRepository
+JobOpeningRepository .--> JobOpening
+
+@enduml

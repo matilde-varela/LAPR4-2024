@@ -1,0 +1,112 @@
+@startuml US1021_DM
+
+skinparam classAttributeIconSize 0
+hide empty attributes
+skinparam classBackgroundColor beige
+skinparam ArrowColor #222222
+
+    class Address <<(V,#FF8B40) value object>> {}
+
+ class FullClassName <<(V,#FF8B40) value object>> {}
+
+'    class InterviewEvaluator <<(S,#4d91f7) service>> {}
+
+package "<<aggregate>> Interview Model" {
+    entity InterviewModel <<entity>> <<root>>  {}
+    class InterviewModelName <<(V,#FF8B40) value object>> <<identifier>> {}
+    class InterviewModelDescription <<(V,#FF8B40) value object>> {}
+}
+package "<<aggregate>> Requirement Specification" {
+    entity RequirementSpecification <<entity>> <<root>>  {}
+    class RequirementName <<(V,#FF8B40) value object>> <<identifier>> {}
+    class RequirementDescription <<(V,#FF8B40) value object>> {}
+}
+
+package "<<aggregate>> Job Opening" {
+    entity JobOpening <<entity>> <<root>> {}
+    class JobFunction <<(V,#FF8B40) value object>> {}
+    class JobOpeningStatus <<(V,#FF8B40) value object>> {}
+    class ContractType <<(V,#FF8B40) value object>> {}
+    class Mode <<(V,#FF8B40) value object>> {}
+    class NumberVacancy <<(V,#FF8B40) value object>> {}
+       class Description <<(V,#FF8B40) value object>> {}
+     class JobReference <<(V,#FF8B40) value object>> <<identifier>> {}
+      class Rank <<(V,#FF8B40) value object>>{}
+}
+
+package "<<aggregate>> Customer Manager" {
+    entity CustomerManager <<entity>> <<root>>  {}
+}
+
+package "<<aggregate>> Candidate" {
+    entity Candidate <<entity>>  <<root>>{}
+    class CandidateName <<(V,#FF8B40) value object>> {}
+    class PhoneNumber <<(V,#FF8B40) value object>> {}
+    class Email <<(V,#FF8B40) value object>> {}
+}
+
+package "<<aggregate>> Application" {
+    entity Application <<entity>><<root>>  {}
+    class ApplicationDate <<(V,#FF8B40) value object>> {}
+    class ApplicationStatus <<(V,#FF8B40) value object>> {}
+    class Interview <<(V,#FF8B40) value object>>   {}
+    class InterviewAnswer <<(V,#FF8B40) value object>>   {}
+    class InterviewResult <<(V,#FF8B40) value object>>   {}
+    class Justification <<(V,#FF8B40) value object>>   {}
+    class InterviewGrade <<(V,#FF8B40) value object>>   {}
+    class RequirementAnswer <<(V,#FF8B40) value object>>   {}
+    class RequirementResult <<(V,#FF8B40) value object>>   {}
+    class InterviewAnswer <<(V,#FF8B40) value object>>   {}
+    class Schedule <<(V,#FF8B40) value object>> {}
+     class File <<(V,#FF8B40) value object>> {}
+}
+
+CustomerManager --> "1..*" JobOpening: registers
+CustomerManager ---> "0..*" Application : overseas
+CustomerManager --> "1..*" Candidate : manages
+CustomerManager --> "1..*" InterviewModel : selects
+
+Candidate --> "1..*" Application : submits
+Candidate --> "1..*" JobOpening : applies for
+Candidate ---> "1" Email: identified by
+Candidate --> "1" CandidateName: has
+Candidate ---> "1" PhoneNumber: has
+
+JobOpening ---> "1"  JobReference : includes
+JobOpening --> "1"  Mode : includes
+JobOpening --> "1"  NumberVacancy : includes
+JobOpening ---> "1"  Address : includes
+JobOpening --> "1"  JobFunction : includes
+JobOpening ---> "1"  Description : includes
+JobOpening ---> "1"  ContractType : includes
+JobOpening --> "1" JobOpeningStatus : classified by
+JobOpening ---> "1"  RequirementSpecification : includes
+JobOpening -> "1"  InterviewModel : includes
+'JobOpening --> "1"  RecruitmentProcess : includes
+JobOpening ---> "*"  Rank : includes
+JobOpening --> "1"  Application : associated to <
+
+'--
+Application ---> "0..1" Interview : includes
+Application --> "1" RequirementAnswer : includes
+Application ---> "1" RequirementResult : includes
+Application ---> "1..*" File : describes <
+Application ---> "1" ApplicationDate : registered by
+Application --> "1" ApplicationStatus : categorizes <
+'--
+
+Interview ---> "1" InterviewAnswer: described in
+Interview ---> "1" InterviewResult: classifies <
+InterviewResult -> "1" InterviewGrade: grades <
+InterviewResult --> "1" Justification: justifies <
+Interview --> "1" Schedule : follows a
+'--
+InterviewModel --> "1" InterviewModelName: identifies <
+InterviewModel --> "1" InterviewModelDescription: describes <
+InterviewModel --> "1" FullClassName: configures <
+'--
+RequirementSpecification --> "1" RequirementName: identifies <
+RequirementSpecification --> "1" RequirementDescription: describes <
+RequirementSpecification --> "1" FullClassName: configures <
+
+@enduml

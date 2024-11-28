@@ -1,0 +1,10 @@
+[SC]-1/Which of the following is an object-oriented programming language?/Python;HTML;Java;SQL;/Java:1
+[MC]-1/Which of the following are commonly used front-end web development languages?/HTML;Python;CSS;Java;JavaScript;SQL/HTML;CSS;JavaScript:1
+[WN]-1/How many years have you been working with JavaScript?/5:1
+[D]-1/When was released the programming language Python?/20-02-1991:1/=
+[WN]-2/How many bits are in a byte?/8:1/=
+[TF]-1/Is Java a high-level language?/True:1
+[NS]-1/How often do you use git on a scale of one to five?/4-5:1
+[DN]-1/What is the value of pi with only two decimal places?/3.14:1/=
+[SA]-1/What does SQL stands for?/Structured Query Language:1/Structure Query Language:1
+[T]-1/How long can you focus on a problem?/03:00:1/>=

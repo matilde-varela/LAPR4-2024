@@ -1,0 +1,142 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+participant "<<Thread>>\nClientConnectionThread" as CLITHREAD
+participant "<<Thread>>\nNotificationRequestThread" as THREAD
+participant "<<Service>>\nNotificationManagementService" as NS
+participant "<<Infrastructure>>\nNotificationRepository" as NREPO
+participant "<<Domain>>\nNotification" as N
+participant "<<DTO>>\nNotificationDTOService" as NDTOS
+
+activate CLITHREAD
+
+    CLITHREAD -> CLITHREAD : dataDTO = receiveRequest()
+
+    CLITHREAD -> THREAD** : create(dataDTO, new DataOutputStream(socket.getOutputStream()))
+
+    opt Option 1 (data.code == FollowUpRequestCodes.UNSEENNOTIFLIST.getCode())
+
+        activate THREAD
+
+            THREAD -> THREAD : String username = (String) SerializationUtil.deserialize(data.dataBlockList().get(0).data())
+
+            THREAD -> NS : getUnseenNotificationsByUsername(username)
+
+            activate NS
+
+                NS -> NREPO : getUnseenNotificationsByUsername(username)
+
+                activate NREPO
+
+                    NREPO --> NS : notifications
+
+                deactivate NREPO
+
+                loop for each notification in notifications
+
+                    NS -> N : notificationWasSeen()
+
+                    activate N
+
+                    deactivate N
+
+                    NS -> NREPO : save(notification)
+
+                    activate NREPO
+
+                    deactivate NREPO
+
+                end
+
+                NS -> NDTOS : convertToDTO(notifications)
+
+                activate NDTOS
+
+                    NDTOS --> NS : notificationsDTO
+
+                deactivate NDTOS
+
+                NS --> THREAD : notificationsDTO
+
+            deactivate NS
+
+                THREAD -> THREAD : dataDTO = DataDTO.turnListIntoDataDTO(data.code(), notificationsDTO)
+
+
+    else Option 2 (data.code == FollowUpRequestCodes.SEENNOTIFLIST.getCode())
+
+            THREAD -> THREAD : String username = (String) SerializationUtil.deserialize(data.dataBlockList().get(0).data())
+
+            THREAD -> THREAD : String date = (String) SerializationUtil.deserialize(data.dataBlockList().get(1).data())
+
+            THREAD -> NS : getSeenNotificationsByUsernameAndDate(username, date)
+
+            activate NS
+
+                NS -> NREPO : getUnseenNotificationsByUsername(username)
+
+                activate NREPO
+
+                    NREPO --> NS : notifications
+
+                deactivate NREPO
+
+                NS -> NDTOS : convertToDTO(notifications)
+
+                                activate NDTOS
+
+                                    NDTOS --> NS : notificationsDTO
+
+                                deactivate NDTOS
+
+                                NS --> THREAD : notificationsDTO
+
+            deactivate NS
+
+                THREAD -> THREAD : dataDTO = DataDTO.turnListIntoDataDTO(data.code(), notificationsDTO)
+
+
+
+    else data.code == FollowUpRequestCodes.CHECKNOTIF.getCode()
+
+        THREAD -> THREAD : String username = (String) SerializationUtil.deserialize(data.dataBlockList().get(0).data())
+
+        THREAD -> NS : checkForUnseenNotificationsByUsername(username)
+
+        activate NS
+
+            NS -> NREPO : checkForUnseenNotificationsByUsername(username)
+
+            activate NREPO
+
+                NREPO --> NS : answer
+
+            deactivate NREPO
+
+            NS --> THREAD : answer
+
+        deactivate NS
+
+            THREAD -> THREAD : dataDTO = DataDTO.turnListIntoDataDTO(data.code(), notificationsDTO)
+
+            THREAD -> THREAD : dataDTO = new DataDTO(data.code())
+
+            THREAD -> THREAD : byte[] stringBytes = SerializationUtil.serialize(String.valueOf(answer))
+
+            THREAD -> THREAD : dataDTO.addDataBlock(stringBytes.length, stringBytes)
+
+
+
+    else Option 3 (data.code == FollowUpRequestCodes.DISCONN.getCode())
+
+        CLITHREAD -> CLITHREAD : sendEmptyResponse(FollowUpRequestCodes.ACK)
+
+        CLITHREAD -> CLITHREAD : closeConnection()
+
+    end
+
+deactivate CLITHREAD
+
+@enduml

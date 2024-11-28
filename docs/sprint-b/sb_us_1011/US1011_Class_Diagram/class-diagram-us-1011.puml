@@ -1,0 +1,88 @@
+@startuml
+
+title US1011 Class Diagram
+
+abstract class AbstractUI {
+    # doShow()
+}
+
+class SelectInterviewModelUI {}
+
+class SelectInterviewModelController{
+    + create()
+    + activeJobOpenings()
+    + availableInterviewModels()
+    + updateJobOpening(jobOpeningDTO, interviewModelDTO)
+}
+
+class AuthorizationService {
+    +  ensureAuthenticatedUserHasAnyOf(roles)
+}
+class JobOpeningManagementService{
+    + activeJobOpenings()
+}
+class JobOpeningDtoService{
+    + convertToDto(jobOpenings)
+}
+class InterviewModelManagementService{
+    + availableInterviewModels()
+}
+class InterviewModelDTOService {
+    + convertToDto(interviewModels)
+}
+
+class JobOpeningRepository{
+    + activeJobOpenings()
+    + ofIdentify(jobReference)
+    + save(jobOpening)
+}
+
+class InterviewModelRepository{
+    + availableInterviewModels()
+    + ofIdentify(interviewModel)
+}
+
+class InterviewModel{
+    + toDto()
+}
+class InterviewModelDto{}
+class JobOpening{
+    +toDto()
+}
+class JobOpeningDto{}
+
+interface DomainRepository{
+    +save(entity)
+}
+
+interface DtoAble{
+    +toDto()
+}
+AbstractUI <|-- SelectInterviewModelUI
+
+SelectInterviewModelUI ..>SelectInterviewModelController
+
+SelectInterviewModelController ..> AuthorizationService
+SelectInterviewModelController ..> InterviewModelManagementService
+SelectInterviewModelController ..> JobOpeningManagementService
+
+InterviewModelManagementService ..> InterviewModelDTOService
+InterviewModelManagementService --> InterviewModelRepository
+InterviewModelDTOService --> InterviewModel
+InterviewModelDTOService --> InterviewModelDto
+JobOpeningManagementService --> InterviewModelRepository
+JobOpeningManagementService --> JobOpeningRepository
+JobOpeningManagementService --> JobOpening
+JobOpeningManagementService ..> JobOpeningDtoService
+JobOpeningDtoService --> JobOpeningDto
+
+InterviewModel --> InterviewModelDto
+JobOpening ..|> DtoAble
+JobOpening --> JobOpeningDto
+
+InterviewModelRepository ..|> DomainRepository
+JobOpeningRepository ..|> DomainRepository
+
+
+
+@enduml

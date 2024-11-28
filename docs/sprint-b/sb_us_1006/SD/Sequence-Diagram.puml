@@ -1,0 +1,129 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+skinparam sequenceMessageAlign left
+
+    Actor "CustomerManager" as CM
+    Participant "<<Presentation>>\nListCandidateDataUI" as UI
+    Participant "<<Application>>\nListCandidateDataController" as CTRL
+    Participant "<<Domain>>\nListCandidateDataService" as SERVICE
+    Database "<<Infrastructure>>\nCandidateRepository" as CREPO
+    Participant "<<Domain>>\nCandidate" as C
+
+
+    Activate CM
+    Activate UI
+
+    CM -> UI: Asks to list the information of a candidate
+
+    loop
+
+        UI -> CTRL: create()
+
+        Activate CTRL
+
+        UI -> CTRL: listCandidates()
+
+        CTRL -> CREPO: instance()
+
+        Activate CREPO
+
+        CREPO --> CTRL: instance
+
+        CTRL -> CREPO: findAll()
+
+        CREPO --> CTRL: findAll
+
+        CTRL --> UI:
+
+        UI -> UI: show()
+
+        UI --> CM: prompts user to choose a candidate (email as identifier)
+
+        alt Invalid email address
+
+            CM -> UI: Inputs an invalid email address
+
+            UI -> CTRL: listCandidateData(email)
+
+            CTRL -> SERVICE: listCandidateData(email)
+
+            Activate SERVICE
+
+            SERVICE -> CREPO: instance()
+
+            SERVICE -> CREPO: findById(email)
+
+            loop returns null since it doesn't match
+                CREPO -> CREPO: searches
+            end
+
+            CREPO --> SERVICE: null
+
+            SERVICE --> CTRL: null
+
+            Deactivate SERVICE
+
+            CTRL --> UI: null
+
+            UI --> CM: Notifies the user it's invalid and asks to try again
+
+        else Valid email address
+
+            CM -> UI: Inputs a valid email address
+
+            UI -> CTRL: listCandidateData(email)
+
+                        CTRL -> SERVICE: listCandidateData(email)
+
+                        Activate SERVICE
+
+                        SERVICE -> CREPO: instance()
+
+                        SERVICE -> CREPO: findById(email)
+
+                        loop returns the candidate when it matches the email
+                            CREPO -> CREPO: searches
+                        end
+
+                        CREPO -> C: instance()
+
+                        Activate C
+
+                        C --> CREPO: instance
+
+                        CREPO --> CTRL: findById
+
+                        CTRL -> SERVICE: listCandidateData()
+
+                        SERVICE -> C: toString()
+
+                        C --> SERVICE: toString
+
+                        SERVICE --> CTRL: listCandidateData
+
+                        Deactivate SERVICE
+
+                        Deactivate C
+
+                        CTRL --> UI: listCandidateData
+
+                        UI --> CM: Shows candidate's data
+            end
+
+        UI --> CM: Asks the user if it wants to search for another candidate
+
+        alt User wants to search again
+
+            CM -> UI: Writes "y" or "Yes"
+
+        end
+
+    end
+
+        CM -> UI: Writes "n" or "No"
+
+        UI --> CM: Sends user back to the main menu
+
+@enduml

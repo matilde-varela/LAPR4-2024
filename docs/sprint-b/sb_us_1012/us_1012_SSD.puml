@@ -1,0 +1,39 @@
+@startuml US1012_SSD
+autonumber
+
+actor "Customer Manager" as CM
+participant "System" as SYS
+participant "Plugin" as PLU
+
+activate CM
+
+CM -> SYS : asks to generate a new interview\n model file
+
+activate SYS
+
+    SYS --> CM : shows job Openings to select
+deactivate SYS
+
+CM -> SYS : selects a job Opening
+activate SYS
+
+
+SYS -> PLU : generate and export template file
+activate PLU
+
+PLU -> PLU : generates file
+
+PLU -> PLU : validates the generated template\n file with a specific grammar
+
+PLU -> PLU : exports the interview\n model file
+
+PLU --> SYS : confirms exportation
+deactivate PLU
+
+SYS --> CM : confirms the successful\n exportation of the file
+deactivate SYS
+
+
+deactivate CM
+
+@enduml

@@ -1,0 +1,98 @@
+@startuml
+
+title [US1009] - Class Diagram
+
+abstract class AbstractUI {
+    # doShow()
+    # show()
+    # mainLoop()
+}
+
+class AuthorizationService {
+    +  ensureAuthenticatedUserHasAnyOf(roles)
+}
+
+class JobOpeningManagementService {
++ activeJobOpenings()
+}
+class JobOpeningDtoService {
++ convertToDto(jobOpenings)
+}
+
+class RequirementSpecificationManagementService {
++ availableRequirementSpecifications()
+}
+class RequirementSpecificationDtoService {
++ convertToDto(requirementSpecifications)
+}
+
+class SelectRequirementSpecificationUI {}
+
+class SelectRequirementSpecificationController{
++ activeJobOpenings()
++ availableRequirementSpecifications()
++ updateRequirementSpecification(jobOpeningDto, requirementSpecificationDto)
+}
+
+class JobOpeningRepository{
++ findAllJobOpeningsNotStarted()
++ ofIdentity(jobReference)
+}
+class RequirementSpecificationRepository{
++ requirementsSpecifications()
++ ofIdentity(requirementName)
+}
+interface DomainRepository{
++ save(entity)
+}
+class JobOpening{
+}
+class RequirementSpecification{
+}
+interface DTOable {
++ toDto()
+}
+class RequirementName <<(V,#FF8B40) value object>> {
+- name
+}
+class JobReference <<(V,#FF8B40) value object>> {
+- customerCode
+- sequentialCode
+}
+
+AbstractUI <|-- SelectRequirementSpecificationUI
+SelectRequirementSpecificationUI .-> SelectRequirementSpecificationController
+
+SelectRequirementSpecificationController .> AuthorizationService
+SelectRequirementSpecificationController .--> JobOpeningManagementService
+SelectRequirementSpecificationController .--> RequirementSpecificationManagementService
+SelectRequirementSpecificationController .--> JobOpeningRepository
+SelectRequirementSpecificationController .--> RequirementSpecificationRepository
+SelectRequirementSpecificationController --> JobOpeningDto
+SelectRequirementSpecificationController --> RequirementSpecificationDto
+
+JobOpeningManagementService --> JobOpeningRepository
+JobOpeningManagementService .-> JobOpeningDtoService
+JobOpeningDtoService --> JobOpening
+JobOpeningManagementService --> JobOpening
+JobOpeningManagementService .-> RequirementSpecification
+JobOpeningManagementService ---> RequirementSpecificationRepository
+JobOpeningDtoService --> JobOpeningDto
+
+RequirementSpecificationManagementService --> RequirementSpecificationRepository
+RequirementSpecificationManagementService .--> RequirementSpecificationDtoService
+RequirementSpecificationDtoService --> RequirementSpecification
+RequirementSpecificationDtoService --> RequirementSpecificationDto
+
+JobOpeningRepository .--|> DomainRepository
+RequirementSpecificationRepository .--|> DomainRepository
+
+JobOpening .--|> DTOable
+RequirementSpecification .--|> DTOable
+JobOpening --> JobOpeningDto
+RequirementSpecification --> RequirementSpecificationDto
+JobOpening ---> RequirementSpecification
+RequirementSpecification --> RequirementName
+JobOpening --> JobReference
+
+@enduml

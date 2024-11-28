@@ -1,0 +1,29 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+skinparam sequenceMessageAlign center
+
+    CustomerManager -> System : Asks to change the state of a Phase
+
+    System --> CustomerManager : Shows job openings and asks for one
+
+    CustomerManager -> System : Job Reference
+
+    System --> CustomerManager : Shows all the Phases of the Recruitment Process and their states
+
+    System --> CustomerManager : Asks if it wants to start a phase or go back
+
+    alt Go back
+
+        ref over CustomerManager, System : Go_Back_Scenario
+
+    else Next Phase
+
+        ref over CustomerManager, System : Start_Phase_Scenario
+
+
+    end
+
+@enduml

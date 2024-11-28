@@ -1,0 +1,45 @@
+@startuml
+autonumber
+
+title US1020 - Notify Candidate Application Status Changed
+
+participant ":EventPublisher" as EP <<application>>
+participant ":ApplicationStatus\nChangedWatchDog" as WD <<application>>
+participant ":NotifyCandidateOnApplication\nStatusChangedController" as CTRL_EVENT <<application>>
+participant ":Notification\nManagementService" as ENTITY <<service>>
+participant ":Notification" as N <<domain>>
+database ":NotificationRepository" as N_REPO
+
+
+ -> EP : publish()
+activate EP
+
+EP -> WD: onEvent()
+activate WD
+
+WD -> CTRL_EVENT**: create()
+
+
+WD -> CTRL_EVENT: notifyCandidateOf\nChangedStatus(applicationStatusChangedEvent)
+activate CTRL_EVENT
+
+CTRL_EVENT -> ENTITY: registerNotification(applicationStatusChangedEvent)
+activate ENTITY
+
+ENTITY -> N**: create(applicationStatus\nChangedEvent)
+
+ENTITY -> N_REPO: save(notification)
+activate N_REPO
+deactivate N_REPO
+
+
+
+deactivate ENTITY
+
+deactivate WD
+deactivate EP
+deactivate CTRL_EVENT
+
+@enduml
+
+

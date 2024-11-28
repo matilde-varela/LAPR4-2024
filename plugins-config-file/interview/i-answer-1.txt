@@ -1,0 +1,36 @@
+[DN]-1 "What is the pixel width of a standard Bootstrap container?"
+A:. 13.2
+
+[SA]-1 "Name a popular CSS preprocessor."
+A:. Prepors
+
+[T]-1 "At what time do you usually start coding?"
+A:. 09:00
+
+[MC]-1 "Which of the following are you familiar with?"
+1) TypeScript
+2) Python
+3) C
+4) Java
+A:. Java Python
+
+[WN]-2 "How many projects have you completed?"
+A:. 16
+
+[WN]-1 "How many years have you been working as a Software Engineer?"
+A:. 6
+
+[D]-1 "When did you finish your university degree?"
+A:. 22/10/2022
+
+[NS]-1 "Rate your proficiency in C on a scale of one to five."
+A:. 4
+
+[SC]-1 "Which one do you have more experience in?"
+1) Bitbucket
+2) Github
+3) SourceTree
+A:. Bitbucket
+
+[TF]-1 "Are you familiar with responsive web design?"
+A:. True

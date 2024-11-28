@@ -1,0 +1,172 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+skinparam sequenceMessageAlign left
+
+    Actor "CustomerManager" as CM
+    Participant "<<Presentation>>\nListCandidateDataUI" as UI
+    Participant "<<Application>>\nListCandidateDataController" as CTRL
+    Participant "<<Infrastructure>>\nListCandidateDataDTOService" as SERVICE
+    Database "<<Infrastructure>>\nCandidateRepository" as CREPO
+    Participant "<<Domain>>\nCandidate" as C
+    Database "<<Infrastructure>>\nApplicationRepository" as AREPO
+    Participant "List<Applications> allApplications" as ALIST
+    Participant "List<Applications> ApplicationsDTO" as ALISTDTO
+    Participant "CandidateDataDTO" as DTO
+
+    Activate CM
+    Activate UI
+
+    CM -> UI: Asks to list the information of a candidate
+
+    loop
+
+        UI -> CTRL: create()
+
+        Activate CTRL
+
+        UI -> CTRL: listCandidates()
+
+        CTRL -> CREPO: instance()
+
+        Activate CREPO
+
+        CREPO --> CTRL: instance
+
+        CTRL -> CREPO: findAll()
+
+        CREPO --> CTRL: findAll
+
+        CTRL --> UI:
+
+        UI -> UI: show()
+
+        UI --> CM: prompts user to choose a candidate (phone number as identifier)
+
+        alt Invalid phone number
+
+            CM -> UI: Inputs an invalid phone number
+
+            UI -> CTRL: listCandidateData(phoneNumber)
+
+            CTRL -> SERVICE: listCandidateData(phoneNumber)
+
+            Activate SERVICE
+
+            SERVICE -> CREPO: instance()
+
+            SERVICE -> CREPO: findById(phoneNumber)
+
+            loop returns null since it doesn't match
+                CREPO -> CREPO: searches
+            end
+
+            CREPO --> SERVICE: null
+
+            SERVICE --> CTRL: null
+
+            Deactivate SERVICE
+
+            CTRL --> UI: null
+
+            UI -> UI: doShow()
+
+            UI --> CM: Notifies the user it's invalid and asks to try again
+
+        else Valid phone number
+
+            CM -> UI: Inputs a valid phone number
+
+            UI -> CTRL: listCandidateData(phoneNumber)
+
+                        CTRL -> SERVICE: listCandidateData(phoneNumber)
+
+                        Activate SERVICE
+
+                        SERVICE -> CREPO: instance()
+
+                        SERVICE -> CREPO: findById(phoneNumber)
+
+                        loop returns the candidate when it matches the phone number
+                            CREPO -> CREPO: searches
+                        end
+
+                        CREPO -> C: instance()
+
+                        Activate C
+
+                        C --> CREPO: candidate
+
+                        Deactivate C
+
+                        CREPO --> SERVICE: candidate
+
+                        SERVICE -> SERVICE: candidateDTO = toDTO(candidate)
+
+                        SERVICE -> AREPO: instance()
+
+                        Activate AREPO
+
+                        SERVICE -> AREPO: findAll()
+
+                        AREPO --> SERVICE: allApplications
+
+                        loop for each application in allApplications
+
+                            SERVICE -> ALIST: app = get(i)
+
+                            alt if app.phoneNumber == candidate.phoneNumber
+
+                            Activate ALIST
+
+                            Deactivate ALIST
+
+                            SERVICE -> SERVICE: appDTO = toDTO(app)
+
+                            SERVICE -> ALISTDTO : add(appDTO)
+
+                            Activate ALISTDTO
+
+                            Deactivate ALISTDTO
+
+                            end
+
+                        end
+
+                        SERVICE -> DTO**: create()
+
+                        SERVICE -> DTO: setCandidate(candidate)
+
+                        Activate DTO
+
+                        SERVICE -> DTO: setAllApplications(applicationsDTO)
+
+                        SERVICE --> CTRL: candidateDataDTO
+
+                        Deactivate SERVICE
+
+                        Deactivate C
+
+                        CTRL --> UI: candidateDataDTO
+
+                        UI -> UI: doShow()
+
+                        UI --> CM: Shows candidate's data
+            end
+
+        UI --> CM: Asks the user if it wants to search for another candidate
+
+        alt User wants to search again
+
+            CM -> UI: Writes "y" or "Yes"
+
+        end
+
+    end
+
+        CM -> UI: Writes "n" or "No"
+
+        UI --> CM: Sends user back to the main menu
+
+@enduml

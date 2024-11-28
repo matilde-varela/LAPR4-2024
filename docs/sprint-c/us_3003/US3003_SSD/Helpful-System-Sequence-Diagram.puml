@@ -1,0 +1,41 @@
+@startuml US3001_SSD
+
+title US3001 System Sequence Diagram
+
+autonumber
+
+actor "Customer" as CAND
+participant "System\n(Customer App)" as SYS
+participant "Follow Up Server" as SERVER
+
+activate SYS
+
+    activate CAND
+
+        CAND -> SYS : authenticates
+
+        SYS -> SERVER : establishes TCP connection
+
+        activate SERVER
+
+        SYS -> SERVER : authenticate user
+
+            loop Every minute
+
+                SYS -> SERVER : requests all unseen customer's notifications
+
+                SERVER --> SYS : customer's notifications
+
+            end
+
+        deactivate SERVER
+
+        CAND -> SYS : asks for notifications
+
+        SYS --> CAND : shows notifications
+
+    deactivate SYS
+
+deactivate CAND
+
+@enduml

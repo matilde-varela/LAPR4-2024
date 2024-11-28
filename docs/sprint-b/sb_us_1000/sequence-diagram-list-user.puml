@@ -1,0 +1,66 @@
+@startuml
+autonumber
+
+
+actor "Admin" as AD
+
+participant ":ListUsersUI" as UI <<presentation>>
+participant ":ListUsersController" as CTRL <<application>>
+participant ":ListUserService" as FS <<service>>
+participant ":UserManagementService" as UMS <<service>>
+participant ":AuthorizationService" as AUTHZ <<service>>
+
+note right AUTHZ
+The UserManagementService and
+AuthorizationService are implemented
+in the eapli framework and will
+be used in this functionality.
+end note
+
+
+activate AD
+
+AD -> UI : wants to list backoffice users
+activate UI
+
+UI -> CTRL**: create
+
+
+
+UI ->   CTRL: backofficeUsers()
+activate CTRL
+
+CTRL -> AUTHZ:  ensureAuthenticatedUserHasAnyOf(roles)
+activate AUTHZ
+deactivate AUTHZ
+
+
+CTRL -> FS: backofficeUsers()
+activate FS
+
+
+FS -> UMS: allUsers()
+activate UMS
+
+UMS --> FS: users
+deactivate UMS
+
+FS -> FS: filterBackofficeUsers(users)
+activate FS
+
+FS --> FS: backofficeUsers
+deactivate FS
+
+
+FS --> CTRL: backofficeUsers
+deactivate FS
+
+
+CTRL --> UI: backofficeUsers
+deactivate CTRL
+
+UI --> AD: shows backofficeUsers
+
+deactivate AD
+
+@enduml
